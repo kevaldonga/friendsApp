@@ -1,13 +1,22 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:friendsapp/SystemChannels/toast.dart';
+import 'package:friendsapp/auth/common/functions/handleexecptions.dart';
+import 'package:friendsapp/auth/common/functions/validations.dart';
 import 'package:friendsapp/auth/common/widgets/otherauthproviders.dart';
 import 'package:friendsapp/auth/screens/loginview.dart';
-import 'package:friendsapp/auth/screens/otpverfication.dart';
+import 'package:friendsapp/auth/screens/phonenoverification.dart';
+import 'package:friendsapp/firebase/firebaseauth.dart';
+import 'package:friendsapp/global/functions/alertdialogbox.dart';
 import 'package:friendsapp/models/user.dart';
 import 'package:friendsapp/static/textstyles.dart';
 import 'package:provider/provider.dart';
 
+import '../../firebase/otherauthproviders.dart';
 import '../common/widgets/button.dart';
 import '../common/widgets/textfield.dart';
+import 'otpverfication.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -63,9 +72,10 @@ class RegisterView extends StatelessWidget {
                         const SizedBox(width: 7),
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).push(
+                            Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                   builder: (context) => const LoginView()),
+                              (_) => false,
                             );
                           },
                           child: const Text(
@@ -139,6 +149,14 @@ class RegisterView extends StatelessWidget {
         },
         onSubmitted: (value) {
           FocusScope.of(context).requestFocus(FocusNode());
+          if (validateEmail(provider.email) &&
+              validatePassword(provider.password) &&
+              validatePhoneno(provider.phoneno) &&
+              provider.email.isNotEmpty) {
+            onPressedSignUp(provider, context);
+          } else {
+            Toast("resolve all errors before proceeding!");
+          }
         },
       ),
 
@@ -147,13 +165,12 @@ class RegisterView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 50),
         child: Center(
           child: AuthButton(
+            disabled: (!(validateEmail(provider.email) &&
+                    validatePassword(provider.password) &&
+                    validatePhoneno(provider.phoneno))) ||
+                provider.email.isEmpty,
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => OtpVerfication(
-                      user: User(
-                          email: provider.email,
-                          phoneno: provider.phoneno,
-                          countrycode: provider.countrycode))));
+              onPressedSignUp(provider, context);
             },
             text: "sign up",
           ),
@@ -184,29 +201,85 @@ class RegisterView extends StatelessWidget {
         ),
       ),
 
-      otherproviders(),
+      otherproviders(context),
     ];
   }
 
-  Row otherproviders() {
+  Row otherproviders(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
+      children: [
         // goole
         AuthProviderButton(
           text: "google",
-          onPressed: null,
+          onPressed: () async {
+            OtherAuthProviders.signIn(options: Options.google).then((result) {
+              if (result.runtimeType == User) {
+                Toast("signed in successfully !!");
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const PhoneNoVerification()),
+                    (_) => false);
+              }
+            });
+            // other provider will return user instead of usercredentials
+          },
           iconPath: "lib/Assets/Icons/google.png",
         ),
 
         // facebook
         AuthProviderButton(
           text: "facebook",
-          onPressed: null,
+          onPressed: () async {
+            OtherAuthProviders.signIn(options: Options.facebook).then((result) {
+              if (result.runtimeType == User) {
+                Toast("signed in successfully !!");
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const PhoneNoVerification()),
+                    (_) => false);
+              }
+            });
+          },
           iconPath: "lib/Assets/Icons/facebook.png",
         ),
       ],
     );
+  }
+
+  void register(RegisterViewProvider provider, BuildContext context) async {
+    Toast("your account has been registered successfully!");
+    await showBasicDialog(
+      context,
+      "OTP verification",
+      "OTP will be sent to your phone no- ${provider.countrycode}${provider.phoneno}",
+    ).whenComplete(() {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => OtpVerification(
+            user: MyUser(
+              email: provider.email,
+              phoneno: provider.phoneno,
+              countrycode: provider.countrycode,
+            ),
+          ),
+        ),
+        (_) => false,
+      );
+    });
+  }
+
+  void onPressedSignUp(
+      RegisterViewProvider provider, BuildContext context) async {
+    EasyLoading.show(status: "signing up...");
+    await Auth.signUp(provider.email, provider.password).then((result) {
+      EasyLoading.dismiss();
+      if (result.runtimeType == UserCredential) {
+        register(provider, context);
+        return;
+      }
+      handleExeptions(result);
+    });
   }
 }
 
@@ -218,7 +291,7 @@ class RegisterViewProvider extends ChangeNotifier {
   final FocusNode _phonenoNode = FocusNode();
   String _password = "";
   final FocusNode _passwordNode = FocusNode();
-  String _countrycode = "";
+  String _countrycode = "+91";
 
   RegisterViewProvider({required MediaQueryData md}) : _md = md;
 

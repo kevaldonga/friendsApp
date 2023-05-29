@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "1015291708193-1iocu6pdg1mi1e0kn8to4097pv8ba4a1.apps.googleusercontent.com",
+          "client_id": "1015291708193-puhm2h5i21nbgj4lub91bl3bbuf6p1dh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.friendsapp",
+            "certificate_hash": "4a19adc78394690f48231904050d92bc17f67daa"
+          }
+        },
+        {
+          "client_id": "1015291708193-30nk38filaucu8f4m8953c6uiimasfqf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -29,6 +37,13 @@
             {
               "client_id": "1015291708193-1iocu6pdg1mi1e0kn8to4097pv8ba4a1.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1015291708193-aqvfsl4r9hlbrbj8j8j52o5ng8q5r087.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.friendsapp"
+              }
             }
           ]
         }

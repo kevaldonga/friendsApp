@@ -1,10 +1,24 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:friendsapp/auth/screens/loginview.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:friendsapp/static/colors.dart';
+import 'package:friendsapp/userside/screens/userview.dart';
 
-void main() {
+import 'auth/screens/loginview.dart';
+import 'auth/screens/phonenoverification.dart';
+import 'other/firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
+  EasyLoading.instance
+    ..userInteractions = false
+    ..dismissOnTap = false;
 }
 
 class MyApp extends StatelessWidget {
@@ -13,19 +27,27 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      builder: EasyLoading.init(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch().copyWith(
           secondary: MyColors.accentColor,
         ),
+        splashColor: MyColors.splashColor,
+        highlightColor: MyColors.highlightColor,
+        focusColor: MyColors.focusColor,
       ),
-      home: const AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
+      home: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
           statusBarColor: Colors.transparent,
         ),
-        child: LoginView(),
+        child: FirebaseAuth.instance.currentUser == null
+            ? const LoginView()
+            : FirebaseAuth.instance.currentUser!.phoneNumber != null
+                ? const UserView()
+                : const PhoneNoVerification(),
       ),
     );
   }

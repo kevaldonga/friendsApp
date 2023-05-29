@@ -1,10 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:friendsapp/SystemChannels/toast.dart';
+import 'package:friendsapp/auth/common/functions/validations.dart';
 import 'package:friendsapp/auth/common/widgets/otherauthproviders.dart';
+import 'package:friendsapp/auth/screens/phonenoverification.dart';
 import 'package:friendsapp/auth/screens/registerview.dart';
+import 'package:friendsapp/firebase/firebaseauth.dart';
+import 'package:friendsapp/firebase/otherauthproviders.dart';
+import 'package:friendsapp/global/functions/alertdialogbox.dart';
 import 'package:friendsapp/static/textstyles.dart';
+import 'package:friendsapp/userside/screens/userview.dart';
 import 'package:provider/provider.dart';
 
-import '../../SystemChannels/Toast.dart';
+import '../common/functions/handleexecptions.dart';
 import '../common/widgets/button.dart';
 import '../common/widgets/textfield.dart';
 
@@ -13,7 +22,6 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Toast("hello");
     return ChangeNotifierProvider(
       create: (prcontext) => LoginViewProvider(md: MediaQuery.of(context)),
       child: Consumer<LoginViewProvider>(builder: (context, provider, _) {
@@ -63,9 +71,10 @@ class LoginView extends StatelessWidget {
                         const SizedBox(width: 7),
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).push(
+                            Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                   builder: (context) => const RegisterView()),
+                              (_) => false,
                             );
                           },
                           child: const Text(
@@ -118,15 +127,46 @@ class LoginView extends StatelessWidget {
         },
         onSubmitted: (value) {
           FocusScope.of(context).requestFocus(FocusNode());
+          if (validateEmail(provider.email) &&
+              validatePassword(provider.password) &&
+              provider.email.isNotEmpty) {
+            onPressedLogin(provider, context);
+          } else {
+            Toast("resolve all errors before proceeding!");
+          }
         },
+      ),
+      GestureDetector(
+        onTap: () async {
+          if (validateEmail(provider.email) && provider.email.isNotEmpty) {
+            await showBasicDialog(context, "password reset link",
+                    "Password reset link will be sent to your email address.",
+                    buttonText: "SEND")
+                .whenComplete(
+              () {
+                Auth.passwordResetLink(provider.email);
+                Toast("password reset link has been sent to your email");
+              },
+            );
+          } else {
+            Toast("invalid email address");
+          }
+        },
+        child: const Text("forgot password?",
+            style: TextStyles.highlightedBoldText),
       ),
 
       // login button
-      const Padding(
-        padding: EdgeInsets.symmetric(vertical: 50),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 50),
         child: Center(
           child: AuthButton(
-            onPressed: null,
+            disabled: (!(validateEmail(provider.email) &&
+                    validatePassword(provider.password))) ||
+                provider.email.isEmpty,
+            onPressed: () {
+              onPressedLogin(provider, context);
+            },
             text: "login",
           ),
         ),
@@ -156,29 +196,69 @@ class LoginView extends StatelessWidget {
         ),
       ),
 
-      otherproviders(),
+      otherproviders(context),
     ];
   }
 
-  Row otherproviders() {
+  void login(BuildContext context) {
+    Toast("logged in successfully!");
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const UserView()),
+        (_) => false);
+  }
+
+  Row otherproviders(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
+      children: [
         // goole
         AuthProviderButton(
           text: "google",
-          onPressed: null,
+          onPressed: () async {
+            OtherAuthProviders.signIn(options: Options.google).then((result) {
+              if (result.runtimeType == User) {
+                Toast("signed in successfully !!");
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const PhoneNoVerification()),
+                    (_) => false);
+              }
+            });
+            // other provider will return user instead of usercredentials
+          },
           iconPath: "lib/Assets/Icons/google.png",
         ),
 
         // facebook
         AuthProviderButton(
           text: "facebook",
-          onPressed: null,
+          onPressed: () async {
+            OtherAuthProviders.signIn(options: Options.facebook).then((result) {
+              if (result.runtimeType == User) {
+                Toast("signed in successfully !!");
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const PhoneNoVerification()),
+                    (_) => false);
+              }
+            });
+          },
           iconPath: "lib/Assets/Icons/facebook.png",
         ),
       ],
     );
+  }
+
+  void onPressedLogin(LoginViewProvider provider, BuildContext context) async {
+    EasyLoading.show(status: "signing...");
+    await Auth.login(provider.email, provider.password).then((result) {
+      EasyLoading.dismiss();
+      if (result.runtimeType == UserCredential) {
+        login(context);
+        return;
+      }
+      handleExeptions(result);
+    });
   }
 }
 

@@ -14,6 +14,18 @@ class ButtonStyles {
     ),
     textStyle: const MaterialStatePropertyAll(TextStyles.authButtonText),
   );
+
+  static final ButtonStyle authButtonDisabled = ButtonStyle(
+    backgroundColor:
+        const MaterialStatePropertyAll<Color>(MyColors.accentColorDisabled),
+    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14.0),
+      ),
+    ),
+    textStyle: const MaterialStatePropertyAll(TextStyles.authButtonText),
+  );
+
   static final ButtonStyle otherauth = ButtonStyle(
     backgroundColor: const MaterialStatePropertyAll<Color>(Colors.white),
     shape: MaterialStateProperty.all<RoundedRectangleBorder>(

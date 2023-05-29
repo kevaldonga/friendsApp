@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:friendsapp/static/colors.dart';
 import 'package:friendsapp/static/textstyles.dart';
-
-import '../../static/buttonstyles.dart';
 
 class AuthProviderButton extends StatelessWidget {
   final String text;
@@ -17,12 +16,22 @@ class AuthProviderButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MediaQueryData md = MediaQuery.of(context);
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ButtonStyles.otherauth,
-      child: SizedBox(
+    return InkWell(
+      highlightColor: Colors.transparent,
+      splashColor: MyColors.splashColor,
+      focusColor: MyColors.focusColor,
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
         height: 50,
-        width: md.size.width * 0.35,
+        width: md.size.width * 0.4,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color.fromARGB(255, 197, 197, 197),
+            width: 1,
+          ),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

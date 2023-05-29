@@ -5,10 +5,12 @@ import 'package:friendsapp/static/textstyles.dart';
 class AuthButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String text;
+  final bool disabled;
   const AuthButton({
     super.key,
     this.onPressed,
     required this.text,
+    this.disabled = false,
   });
 
   @override
@@ -17,12 +19,17 @@ class AuthButton extends StatelessWidget {
     return SizedBox(
       width: md.size.width,
       height: md.size.height * 0.05,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ButtonStyles.authButton,
-        child: Text(
-          text,
-          style: TextStyles.authButtonText,
+      child: IgnorePointer(
+        ignoring: disabled,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: !disabled
+              ? ButtonStyles.authButton
+              : ButtonStyles.authButtonDisabled,
+          child: Text(
+            text,
+            style: TextStyles.authButtonText,
+          ),
         ),
       ),
     );

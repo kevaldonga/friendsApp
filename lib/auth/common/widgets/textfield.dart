@@ -1,9 +1,11 @@
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:friendsapp/auth/common/widgets/pickcountrycode.dart';
 import 'package:friendsapp/auth/static/textfieldinputborders.dart';
 import 'package:friendsapp/static/colors.dart';
 import 'package:friendsapp/static/textstyles.dart';
 import 'package:provider/provider.dart';
+
+import '../functions/validations.dart';
 
 class AuthTextField extends StatelessWidget {
   final String? hintText;
@@ -33,7 +35,10 @@ class AuthTextField extends StatelessWidget {
           Consumer<TextFieldProvider>(builder: (context, textfieldprovider, _) {
         return SizedBox(
           width: inputType == InputType.otp
-              ? MediaQuery.of(context).size.width * 0.15
+              ? MediaQuery.of(context).size.width * 0.12
+              : null,
+          height: inputType == InputType.otp
+              ? MediaQuery.of(context).size.width * 0.12
               : null,
           child: Focus(
             focusNode: FocusNode(),
@@ -57,9 +62,9 @@ class AuthTextField extends StatelessWidget {
               decoration: InputDecoration(
                 errorText: getErrorText(textfieldprovider),
                 counterText: getCounterText(textfieldprovider),
-                prefixIconConstraints: const BoxConstraints(maxWidth: 30),
                 suffixIcon: getSuffixIcon(textfieldprovider),
-                prefix: getPrefixWidget(textfieldprovider),
+                prefixIconConstraints: const BoxConstraints(maxWidth: 50),
+                prefixIcon: getCountryCodeWidget(textfieldprovider, context),
                 prefixStyle: TextStyles.labelText,
                 hintText: hintText,
                 hintStyle: TextStyles.hintText,
@@ -128,11 +133,22 @@ class AuthTextField extends StatelessWidget {
             : "";
   }
 
-  Widget? getPrefixWidget(TextFieldProvider provider) {
+  Widget? getCountryCodeWidget(
+      TextFieldProvider provider, BuildContext context) {
     return inputType == InputType.phoneno
-        ? GestureDetector(
-            onTap: () {},
-            child: Text("${provider.countryCode} | "),
+        ? Center(
+            child: GestureDetector(
+              onTap: () {
+                pickCountryCode(context, (country) {
+                  provider.setCountryCode = "+${country.phoneCode}";
+                  onCountryCodeChanged!("+${country.phoneCode}");
+                });
+              },
+              child: Text(
+                provider.countryCode,
+                style: TextStyles.labelText,
+              ),
+            ),
           )
         : null;
   }
@@ -143,24 +159,24 @@ class AuthTextField extends StatelessWidget {
     }
     switch (inputType) {
       case InputType.email:
-        return !EmailValidator.validate(provider.text)
-            ? "invalid format !"
-            : null;
+        return validateEmail(provider.text) ? null : "invalid format !";
       case InputType.password:
-        return provider.text.length < 8 ? "password is too short !" : null;
+        return validatePassword(provider.text)
+            ? null
+            : "password is too short !";
 
       case InputType.phoneno:
         return provider.text.length < 10
             ? "phoneno is too short !"
-            : RegExp(r'[a-zA-Z]').hasMatch(provider.text)
-                ? "invalid input !"
-                : null;
+            : validatePhoneno(provider.text)
+                ? null
+                : "invalid input !";
       case InputType.otp:
-        return RegExp(r'[a-zA-Z]').hasMatch(provider.text)
+        return validateOtp(provider.text)
             // otp textfield is small so it wont fit
             // so we just show error border
-            ? ""
-            : null;
+            ? null
+            : "";
       default:
         break;
     }
