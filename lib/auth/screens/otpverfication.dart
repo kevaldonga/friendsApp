@@ -10,7 +10,7 @@ import 'package:friendsapp/userside/screens/userview.dart';
 import 'package:provider/provider.dart';
 
 import '../../firebase/exceptions/verification.dart';
-import '../../models/user.dart';
+import '../../models/user/user.dart';
 import '../common/widgets/button.dart';
 
 class OtpVerification extends StatelessWidget {

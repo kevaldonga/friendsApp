@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../SystemChannels/toast.dart';
 import '../../global/functions/alertdialogbox.dart';
-import '../../models/user.dart';
+import '../../models/user/user.dart';
 import '../../static/textstyles.dart';
 import '../common/functions/validations.dart';
 import '../common/widgets/button.dart';

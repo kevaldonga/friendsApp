@@ -8,6 +8,10 @@ bool validateEmail(String text) {
   return EmailValidator.validate(text);
 }
 
+bool validateUsername(String text) {
+  return text.isNotEmpty;
+}
+
 bool validatePhoneno(String text) {
   return !RegExp(r'[a-zA-Z]').hasMatch(text) && text.length == 10;
 }

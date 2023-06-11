@@ -28,3 +28,10 @@ const InputBorder authTextFieldBorderStyleErrorFocused = OutlineInputBorder(
       color: Colors.red,
       width: 2,
     ));
+
+const InputBorder authTextFieldBorderStyleNone = OutlineInputBorder(
+    borderRadius: BorderRadius.all(Radius.circular(12)),
+    borderSide: BorderSide(
+      color: Colors.transparent,
+      width: 2,
+    ));

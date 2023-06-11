@@ -9,7 +9,7 @@ import 'package:friendsapp/auth/screens/loginview.dart';
 import 'package:friendsapp/auth/screens/phonenoverification.dart';
 import 'package:friendsapp/firebase/firebaseauth.dart';
 import 'package:friendsapp/global/functions/alertdialogbox.dart';
-import 'package:friendsapp/models/user.dart';
+import 'package:friendsapp/models/user/user.dart';
 import 'package:friendsapp/static/textstyles.dart';
 import 'package:provider/provider.dart';
 

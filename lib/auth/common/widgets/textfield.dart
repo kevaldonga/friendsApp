@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:friendsapp/auth/common/widgets/pickcountrycode.dart';
 import 'package:friendsapp/auth/static/textfieldinputborders.dart';
 import 'package:friendsapp/static/colors.dart';
@@ -58,22 +59,38 @@ class AuthTextField extends StatelessWidget {
                 textfieldprovider.setText = value;
                 onChanged(value);
               },
+              maxLines: inputType == InputType.bio ? null : 1,
               onSubmitted: onSubmitted,
               decoration: InputDecoration(
                 errorText: getErrorText(textfieldprovider),
                 counterText: getCounterText(textfieldprovider),
                 suffixIcon: getSuffixIcon(textfieldprovider),
                 prefixIconConstraints: const BoxConstraints(maxWidth: 50),
-                prefixIcon: getCountryCodeWidget(textfieldprovider, context),
+                prefixIcon: getPrefixIcon(textfieldprovider, context),
+                prefixIconColor: textfieldprovider.focusnode.hasFocus
+                    ? MyColors.accentColor
+                    : MyColors.greyColorShade,
                 prefixStyle: TextStyles.labelText,
                 hintText: hintText,
                 hintStyle: TextStyles.hintText,
                 errorStyle: inputType == InputType.otp
                     ? TextStyles.hintText.copyWith(fontSize: 0)
                     : null,
-                border: authTextFieldBorderStyleUnfocused,
-                focusedBorder: authTextFieldBorderStyleFocused,
-                enabledBorder: authTextFieldBorderStyleUnfocused,
+                border: inputType == InputType.bio ||
+                        inputType == InputType.username ||
+                        inputType == InputType.otp
+                    ? authTextFieldBorderStyleNone
+                    : authTextFieldBorderStyleUnfocused,
+                focusedBorder: inputType == InputType.bio ||
+                        inputType == InputType.username ||
+                        inputType == InputType.otp
+                    ? authTextFieldBorderStyleNone
+                    : authTextFieldBorderStyleFocused,
+                enabledBorder: inputType == InputType.bio ||
+                        inputType == InputType.username ||
+                        inputType == InputType.otp
+                    ? authTextFieldBorderStyleNone
+                    : authTextFieldBorderStyleUnfocused,
                 errorBorder: authTextFieldBorderStyleError,
                 focusedErrorBorder: authTextFieldBorderStyleErrorFocused,
                 filled: true,
@@ -95,6 +112,8 @@ class AuthTextField extends StatelessWidget {
     switch (inputType) {
       case InputType.email:
         return TextInputType.emailAddress;
+      case InputType.username:
+        return TextInputType.name;
       case InputType.password:
         return null;
       case InputType.phoneno:
@@ -103,6 +122,10 @@ class AuthTextField extends StatelessWidget {
         return TextInputType.name;
       case InputType.otp:
         return TextInputType.number;
+      case InputType.bio:
+        return TextInputType.multiline;
+      default:
+        return null;
     }
   }
 
@@ -118,7 +141,7 @@ class AuthTextField extends StatelessWidget {
                   ? Icons.visibility_rounded
                   : Icons.visibility_off_rounded,
               color: !textfieldprovider.isVisible
-                  ? Colors.grey.shade300
+                  ? MyColors.greyColorShade
                   : MyColors.accentColor,
             ),
           )
@@ -128,29 +151,55 @@ class AuthTextField extends StatelessWidget {
   String? getCounterText(TextFieldProvider textfieldprovider) {
     return inputType == InputType.password
         ? "${textfieldprovider.text.length}"
-        : inputType == InputType.phoneno
-            ? "${textfieldprovider.text.length}/10"
+        : inputType == InputType.phoneno || inputType == InputType.bio
+            ? "${textfieldprovider.text.length}/200"
             : "";
   }
 
-  Widget? getCountryCodeWidget(
-      TextFieldProvider provider, BuildContext context) {
-    return inputType == InputType.phoneno
-        ? Center(
-            child: GestureDetector(
-              onTap: () {
-                pickCountryCode(context, (country) {
-                  provider.setCountryCode = "+${country.phoneCode}";
-                  onCountryCodeChanged!("+${country.phoneCode}");
-                });
-              },
-              child: Text(
-                provider.countryCode,
-                style: TextStyles.labelText,
-              ),
-            ),
-          )
-        : null;
+  Widget? getPrefixIcon(TextFieldProvider provider, BuildContext context) {
+    Widget? innerWidget;
+    switch (inputType) {
+      case InputType.email:
+        innerWidget = const Icon(
+          FontAwesomeIcons.solidEnvelope,
+        );
+        break;
+      case InputType.password:
+        innerWidget = const Icon(
+          FontAwesomeIcons.lock,
+        );
+        break;
+      case InputType.phoneno:
+        innerWidget = GestureDetector(
+          onTap: () {
+            pickCountryCode(context, (country) {
+              provider.setCountryCode = "+${country.phoneCode}";
+              onCountryCodeChanged!("+${country.phoneCode}");
+            });
+          },
+          child: Text(
+            provider.countryCode,
+            style: TextStyles.labelText,
+          ),
+        );
+        break;
+      case InputType.username:
+        innerWidget = const Text("@", style: TextStyles.subtitleText);
+        break;
+      case InputType.bio:
+        innerWidget = innerWidget = const Icon(
+          FontAwesomeIcons.info,
+        );
+        break;
+      default:
+        innerWidget = null;
+    }
+    if (innerWidget == null) {
+      return null;
+    }
+    return Center(
+      child: innerWidget,
+    );
   }
 
   String? getErrorText(TextFieldProvider provider) {
@@ -177,6 +226,8 @@ class AuthTextField extends StatelessWidget {
             // so we just show error border
             ? null
             : "";
+      case InputType.username:
+        return validateUsername(provider.text) ? null : "";
       default:
         break;
     }
@@ -190,6 +241,8 @@ enum InputType {
   phoneno,
   name,
   otp,
+  username,
+  bio,
 }
 
 class TextFieldProvider extends ChangeNotifier {
