@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:friendsapp/static/colors.dart';
 
-const InputBorder authTextFieldBorderStyleUnfocused = OutlineInputBorder(
-    borderRadius: BorderRadius.all(Radius.circular(12)),
+InputBorder authTextFieldBorderStyleUnfocused = OutlineInputBorder(
+    borderRadius: const BorderRadius.all(Radius.circular(12)),
     borderSide: BorderSide(
-      color: Color.fromARGB(255, 197, 197, 197),
+      color: MyColors.lightGrey,
       width: 2,
     ));
 

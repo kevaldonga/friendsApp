@@ -34,13 +34,12 @@ class AuthTextField extends StatelessWidget {
       create: (context) => TextFieldProvider(focusnode: focusnode),
       child:
           Consumer<TextFieldProvider>(builder: (context, textfieldprovider, _) {
+        double? size = inputType == InputType.otp
+            ? MediaQuery.of(context).size.width * 0.12
+            : null;
         return SizedBox(
-          width: inputType == InputType.otp
-              ? MediaQuery.of(context).size.width * 0.12
-              : null,
-          height: inputType == InputType.otp
-              ? MediaQuery.of(context).size.width * 0.12
-              : null,
+          width: size,
+          height: inputType == InputType.username ? null : size,
           child: Focus(
             focusNode: FocusNode(),
             onFocusChange: (value) => textfieldprovider.isFocused = value,
@@ -149,11 +148,21 @@ class AuthTextField extends StatelessWidget {
   }
 
   String? getCounterText(TextFieldProvider textfieldprovider) {
-    return inputType == InputType.password
-        ? "${textfieldprovider.text.length}"
-        : inputType == InputType.phoneno || inputType == InputType.bio
-            ? "${textfieldprovider.text.length}/200"
-            : "";
+    String? text;
+    switch (inputType) {
+      case InputType.password:
+        text = "${textfieldprovider.text.length}";
+        break;
+      case InputType.bio:
+        text = "${textfieldprovider.text.length}/200";
+        break;
+      case InputType.phoneno:
+        text = "${textfieldprovider.text.length}/10";
+        break;
+      default:
+        break;
+    }
+    return text;
   }
 
   Widget? getPrefixIcon(TextFieldProvider provider, BuildContext context) {
@@ -179,12 +188,20 @@ class AuthTextField extends StatelessWidget {
           },
           child: Text(
             provider.countryCode,
-            style: TextStyles.labelText,
+            style: TextStyles.labelText.copyWith(
+                color: provider.focusnode.hasFocus
+                    ? MyColors.accentColor
+                    : Colors.black),
           ),
         );
         break;
       case InputType.username:
-        innerWidget = const Text("@", style: TextStyles.subtitleText);
+        innerWidget = Text("@",
+            style: TextStyles.subtitleText.copyWith(
+              color: provider.focusnode.hasFocus
+                  ? MyColors.accentColor
+                  : Colors.black,
+            ));
         break;
       case InputType.bio:
         innerWidget = innerWidget = const Icon(

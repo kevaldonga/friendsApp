@@ -1,0 +1,15 @@
+npx sequelize-cli model:generate --name users --attributes uid:string,profileId:integer,email:string,phoneno:string,countryCode:string
+npx sequelize-cli model:generate --name profiles --attributes username:string,bio:string,isActive:boolean,note:string
+npx sequelize-cli model:generate --name stories --attributes profileId:integer,likesCount:integer,media:string,description:string
+npx sequelize-cli model:generate --name posts --attributes profileId:integer,title:string,media:string,likesCount:integer,commentsCount:integer
+npx sequelize-cli model:generate --name comments --attributes profileId:integer,postId:integer,comment:string,likesCount:integer
+npx sequelize-cli model:generate --name likesOnPost --attributes profileId:integer,postId:integer
+npx sequelize-cli model:generate --name likesOnComment --attributes profileId:integer,commentId:integer
+npx sequelize-cli model:generate --name likesOnStory --attributes profileId:integer,storyId:integer
+npx sequelize-cli model:generate --name hashtags --attributes tag:string,description:string,color:string,image:string
+npx sequelize-cli model:generate --name hashtagsOnProfile --attributes profileId:integer,hashtagId:integer
+npx sequelize-cli model:generate --name hashtagsOnStory --attributes storyId:integer,hashtagId:integer
+npx sequelize-cli model:generate --name userRelationCount --attributes profileId:integer,followers:integer,followings:integer
+npx sequelize-cli model:generate --name userRelation --attributes followerProfileId:integer,beingFollowedProfileId:integer
+npx sequelize-cli model:generate --name chats --attributes chatroomId:integer,chat:string,sendStatus:integer,sentFromProfileId:integer
+npx sequelize-cli model:generate --name chatrooms --attributes profileId1:integer,profileId2:integer,background:string

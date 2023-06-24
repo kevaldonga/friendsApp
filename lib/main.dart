@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:friendsapp/auth/screens/setprofileinfo.dart';
 import 'package:friendsapp/static/colors.dart';
 
 import 'auth/screens/loginview.dart';
@@ -46,7 +45,7 @@ class MyApp extends StatelessWidget {
         child: FirebaseAuth.instance.currentUser == null
             ? const LoginView()
             : FirebaseAuth.instance.currentUser!.phoneNumber != null
-                ? const SetProfileInfo()
+                ? const LoginView()
                 : const PhoneNoVerification(),
       ),
     );

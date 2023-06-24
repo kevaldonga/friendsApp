@@ -12,4 +12,5 @@ class MyColors {
   static const Color focusColor = Color.fromARGB(255, 255, 216, 201);
   static const Color splashColor = Color.fromARGB(255, 250, 210, 193);
   static final Color greyColorShade = Colors.grey.shade600;
+  static final Color lightGrey = Colors.grey.shade300;
 }
