@@ -10,15 +10,16 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.belongsTo(models.profiles);
+      this.belongsToMany(models.hashtags, { through: "hashtagsonpost", foreignKey: "hashtagsId" });
     }
   }
   posts.init({
-    profileId: DataTypes.INTEGER,
+    profileId: { type: DataTypes.INTEGER, allowNull: false },
     title: DataTypes.STRING,
     media: DataTypes.STRING,
-    likesCount: DataTypes.INTEGER,
-    commentsCount: DataTypes.INTEGER
+    likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    commentsCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   }, {
     sequelize,
     modelName: 'posts',

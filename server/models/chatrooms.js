@@ -10,12 +10,15 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.belongsTo(models.profiles, { foreignKey: "profileId1" });
+      this.belongsTo(models.profiles, { foreignKey: "profileId2" });
+
+      this.hasMany(models.chats);
     }
   }
   chatrooms.init({
-    profileId1: DataTypes.INTEGER,
-    profileId2: DataTypes.INTEGER,
+    profileId1: { type: DataTypes.INTEGER, allowNull: false },
+    profileId2: { type: DataTypes.INTEGER, allowNull: false },
     background: DataTypes.STRING
   }, {
     sequelize,

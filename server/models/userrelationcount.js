@@ -10,13 +10,13 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.belongsTo(models.profiles);
     }
   }
   userRelationCount.init({
-    profileId: DataTypes.INTEGER,
-    followers: DataTypes.INTEGER,
-    followings: DataTypes.INTEGER
+    profileId: { type: DataTypes.INTEGER, allowNull: false },
+    followers: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    followings: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   }, {
     sequelize,
     modelName: 'userRelationCount',

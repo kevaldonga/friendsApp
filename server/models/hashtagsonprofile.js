@@ -10,12 +10,13 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.belongsTo(models.profiles);
+      this.belongsTo(models.hashtags);
     }
   }
   hashtagsOnProfile.init({
-    profileId: DataTypes.INTEGER,
-    hashtagId: DataTypes.INTEGER
+    profileId: { type: DataTypes.INTEGER, allowNull: false },
+    hashtagId: { type: DataTypes.INTEGER, allowNull: false }
   }, {
     sequelize,
     modelName: 'hashtagsOnProfile',

@@ -10,14 +10,21 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.belongsTo(models.chatroomId);
+      this.belongsTo(models.profiles, { foreignKey: "sentFromProfileId" });
     }
   }
   chats.init({
-    chatroomId: DataTypes.INTEGER,
-    chat: DataTypes.STRING,
-    sendStatus: DataTypes.INTEGER,
-    sentFromProfileId: DataTypes.INTEGER
+    chatroomId: { type: DataTypes.INTEGER, allowNull: false },
+    chat: { type: DataTypes.STRING, allowNull: false },
+    sendStatus: { type: DataTypes.INTEGER, allowNull: false, defaultValue: -1 },
+    /* 
+    * -1 - failed
+    *  0 - sent
+    *  1 - delievered
+    *  2 - seen
+    */
+    sentFromProfileId: { type: DataTypes.INTEGER, allowNull: false }
   }, {
     sequelize,
     modelName: 'chats',

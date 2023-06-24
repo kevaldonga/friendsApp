@@ -3,25 +3,23 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class comments extends Model {
+  class hashtagsOnPost extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.belongsTo(models.profiles);
       this.belongsTo(models.posts);
+      this.belongsTo(models.hastags);
     }
   }
-  comments.init({
-    profileId: { type: DataTypes.INTEGER, allowNull: false },
-    postId: { type: DataTypes.INTEGER, allowNull: false },
-    comment: { type: DataTypes.STRING, allowNull: false },
-    likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  hashtagsOnPost.init({
+    postId: DataTypes.INTEGER,
+    hashtagId: DataTypes.INTEGER
   }, {
     sequelize,
-    modelName: 'comments',
+    modelName: 'hashtagsOnPost',
   });
-  return comments;
+  return hashtagsOnPost;
 };
