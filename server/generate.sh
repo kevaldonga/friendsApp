@@ -10,7 +10,6 @@ npx sequelize-cli model:generate --force --name hashtags --attributes tag:string
 npx sequelize-cli model:generate --force --name hashtagsOnProfile --attributes profileId:integer,hashtagId:integer
 npx sequelize-cli model:generate --force --name hashtagsOnStory --attributes storyId:integer,hashtagId:integer
 npx sequelize-cli model:generate --force --name hashtagsOnPost --attributes postId:integer,hashtagId:integer
-npx sequelize-cli model:generate --force --name userRelationCount --attributes profileId:integer,followers:integer,followings:integer
 npx sequelize-cli model:generate --force --name userRelation --attributes followerProfileId:integer,beingFollowedProfileId:integer
 npx sequelize-cli model:generate --force --name chats --attributes chatroomId:integer,chat:string,sendStatus:integer,sentFromProfileId:integer
 npx sequelize-cli model:generate --force --name chatrooms --attributes profileId1:integer,profileId2:integer,background:string

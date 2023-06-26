@@ -92,7 +92,11 @@ class PhoneNoVerification extends StatelessWidget {
         MaterialPageRoute(
           builder: (context) => OtpVerification(
             user: MyUser(
+              id: 1,
+              uid: "1",
               email: "",
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
               phoneno: provider.phoneno,
               countrycode: provider.countrycode,
             ),

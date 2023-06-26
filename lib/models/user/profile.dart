@@ -1,17 +1,23 @@
 class Profile {
-  // final int id;
-  String name;
+  final int id;
+  final int userId;
+  String username;
   String bio;
+  bool isActive;
+  String? note;
   String? avatarUrl;
-  int likeCount;
-  int commentCount;
+  final DateTime createdAt;
+  DateTime updatedAt;
 
   Profile({
-    // required this.id,
-    required this.name,
+    required this.id,
+    required this.userId,
+    required this.username,
     required this.bio,
+    required this.createdAt,
+    required this.updatedAt,
+    this.note,
     this.avatarUrl,
-    this.likeCount = 0,
-    this.commentCount = 0,
+    this.isActive = false,
   });
 }

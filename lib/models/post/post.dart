@@ -3,17 +3,21 @@ class Post {
   final int profileId;
   String title;
   String? description;
-  String mediaUrl;
+  String media;
+  int likesCount;
+  int commentsCount;
   final DateTime createdAt;
-  DateTime lastModified;
+  DateTime updatedAt;
 
   Post({
     required this.id,
     required this.profileId,
     required this.title,
-    required this.mediaUrl,
+    required this.media,
     required this.createdAt,
-    required this.lastModified,
+    required this.updatedAt,
+    this.likesCount = 0,
+    this.commentsCount = 0,
     this.description,
   });
 }

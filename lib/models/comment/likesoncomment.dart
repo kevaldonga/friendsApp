@@ -1,13 +1,13 @@
-class PostLikes {
+class LikesOnComment {
   final int id;
+  final int commentId;
   final int postId;
-  final int profileId;
   int count;
 
-  PostLikes({
+  LikesOnComment({
     required this.id,
+    required this.commentId,
     required this.postId,
-    required this.profileId,
     this.count = 0,
   });
 }

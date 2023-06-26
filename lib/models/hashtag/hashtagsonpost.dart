@@ -1,15 +1,15 @@
-class PostComments {
+class HashtagsOnPost {
   final int id;
   final int postId;
-  final int profileId;
-  int count;
+  final int hashtagId;
   final DateTime createdAt;
+  DateTime updatedAt;
 
-  PostComments({
+  HashtagsOnPost({
     required this.id,
     required this.postId,
-    required this.profileId,
+    required this.hashtagId,
     required this.createdAt,
-    this.count = 0,
+    required this.updatedAt,
   });
 }

@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   posts.init({
     profileId: { type: DataTypes.INTEGER, allowNull: false },
     title: DataTypes.STRING,
-    media: DataTypes.STRING,
+    media: { type: DataTypes.STRING, allowNull: false },
     likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     commentsCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   }, {

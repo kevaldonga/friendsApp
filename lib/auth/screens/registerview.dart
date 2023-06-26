@@ -258,6 +258,10 @@ class RegisterView extends StatelessWidget {
         MaterialPageRoute(
           builder: (context) => OtpVerification(
             user: MyUser(
+              id: 1,
+              uid: "1",
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
               email: provider.email,
               phoneno: provider.phoneno,
               countrycode: provider.countrycode,
