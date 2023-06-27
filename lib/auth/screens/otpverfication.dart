@@ -10,7 +10,7 @@ import 'package:friendsapp/userside/screens/userview.dart';
 import 'package:provider/provider.dart';
 
 import '../../firebase/exceptions/verification.dart';
-import '../../models/user/user.dart';
+import '../../models/user.dart';
 import '../common/widgets/button.dart';
 
 class OtpVerification extends StatelessWidget {
@@ -68,7 +68,7 @@ class OtpVerification extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text("code has been sent to", style: TextStyles.labelText),
-            Text("${user.countrycode}${user.phoneno}",
+            Text("${user.countryCode}${user.phoneno}",
                 style: TextStyles.highlightedBoldText),
           ],
         ),
@@ -170,7 +170,7 @@ class OtpVerification extends StatelessWidget {
 
   void verify(OtpVerificationProvider provider, BuildContext context) {
     Verification.verify(
-      phoneno: "${user.countrycode}${user.phoneno}",
+      phoneno: "${user.countryCode}${user.phoneno}",
       codeSent: (verificationId, forceResendingToken) {
         provider.verificationId = verificationId;
         provider.forceResendingToken = forceResendingToken;

@@ -48,6 +48,7 @@ dependencies:
   flutter_native_image: ^0.0.6+1 # to compress image
   permission_handler: ^10.3.0
   image_picker: ^0.8.8 # to pick image from camera
+  http: ^0.13.6
 
 dev_dependencies:
   flutter_test:

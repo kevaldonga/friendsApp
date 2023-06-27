@@ -100,7 +100,7 @@ app.get("/:commentId/likes", async (req, res) => {
 });
 
 /* 
-* /:commentId/like/:profileId - POST - like on a comment
+* /:commentId/likes/:profileId - POST - like on a comment
 */
 app.post("/:commentId/likes/:profileId", async (req, res) => {
     const commentId = req.params.commentId;

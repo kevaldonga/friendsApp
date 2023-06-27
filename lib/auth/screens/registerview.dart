@@ -9,11 +9,11 @@ import 'package:friendsapp/auth/screens/loginview.dart';
 import 'package:friendsapp/auth/screens/phonenoverification.dart';
 import 'package:friendsapp/firebase/firebaseauth.dart';
 import 'package:friendsapp/global/functions/alertdialogbox.dart';
-import 'package:friendsapp/models/user/user.dart';
 import 'package:friendsapp/static/textstyles.dart';
 import 'package:provider/provider.dart';
 
 import '../../firebase/otherauthproviders.dart';
+import '../../models/user.dart';
 import '../common/widgets/button.dart';
 import '../common/widgets/textfield.dart';
 import 'otpverfication.dart';
@@ -264,7 +264,7 @@ class RegisterView extends StatelessWidget {
               updatedAt: DateTime.now(),
               email: provider.email,
               phoneno: provider.phoneno,
-              countrycode: provider.countrycode,
+              countryCode: provider.countrycode,
             ),
           ),
         ),

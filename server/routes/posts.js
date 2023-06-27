@@ -83,7 +83,7 @@ app.delete("/:postId", async (req, res) => {
 });
 
 /* 
-* /:postId/hashtags - GET - get all tags of post
+* /:postId/hashtags - GET - get all hashtags of post
 */
 app.get("/:postId/hashtags", async (req, res) => {
     const postId = req.params.posts;
@@ -100,7 +100,7 @@ app.get("/:postId/hashtags", async (req, res) => {
 });
 
 /* 
-*  - POST - add hashtag in post
+* /:postId/hashtags/:hashtagId - POST - add hashtag in post
 */
 app.post("/:postId/hashtags/:hashtagId", async (req, res) => {
     const postId = req.params.postId;
@@ -112,7 +112,7 @@ app.post("/:postId/hashtags/:hashtagId", async (req, res) => {
 });
 
 /* 
-* /:postId/:hasgtagId - GET - delete hashtag on post
+* /:postId/hashtags/:hasgtagId - GET - delete hashtag on post
 */
 app.delete("/:postId/hashtags/:hashtagId", async (req, res) => {
     const postId = req.params.postId;

@@ -34,7 +34,7 @@ app.post("/:storyId", async (req, res) => {
 /* 
 * /profileId/stories - GET - get all stories of a profile
 */
-app.post("/:profileId", async (req, res) => {
+app.get("/profile/:profileId", async (req, res) => {
     const profileId = req.params.profileId;
 
     result = await stories.findAll({
@@ -93,7 +93,7 @@ app.get("/:storyId/hashtags", async (req, res) => {
             "storyId": {
                 [Op.eq]: storyId,
             }
-        }
+        },
     });
 
     res.send(result);
@@ -114,7 +114,7 @@ app.post("/:storyId/hashtags/hashtagId", async (req, res) => {
 /* 
 * /:storyId/hastags/:hashtagId - remove a hashtag in a story
 */
-app.get("/:storyId/hashtags/:hashtagId", async (req, res) => {
+app.delete("/:storyId/hashtags/:hashtagId", async (req, res) => {
     const storyId = req.params.storyId;
     const hashtagId = req.params.hashtagId;
 
