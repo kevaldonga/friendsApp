@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 app.post("/", async (req, res) => {
     result = await stories.create(req.body);
 
-    res.send(result);
+    res.send(result ? "story created successfully!!" : "error occured");
 });
 
 /* 
@@ -158,7 +158,16 @@ app.post("/:storyId/likes/:profileId", async (req, res) => {
 
     result = await likesOnStory.create({ "storyId": storyId, "profileId": profileId });
 
-    res.send(result);
+    // increment likes count in story
+    await stories.increment('likesCount', {
+        where: {
+            "id": {
+                [Op.eq]: storyId,
+            },
+        },
+    });
+
+    res.send(result ? "liked on story successfully!!" : "error occured");
 });
 
 /* 
@@ -179,7 +188,16 @@ app.delete("/:storyId/likes/:profileId", async (req, res) => {
         }
     });
 
-    res.send(result);
+    // decrement likes count in story
+    await stories.decrement('likesCount', {
+        where: {
+            "id": {
+                [Op.eq]: storyId,
+            },
+        },
+    });
+
+    res.send(result ? "unliked story successfully!!" : "error occured");
 });
 
 module.exports = app;

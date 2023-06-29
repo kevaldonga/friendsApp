@@ -158,6 +158,15 @@ app.post("/:postId/likes/:profileId", async (req, res) => {
 
     result = await likesOnPost.create({ "postId": postId, "profileId": profileId });
 
+    // increment like count
+    await comments.increment('likesCount', {
+        where: {
+            "id": {
+                [Op.eq]: postId,
+            },
+        },
+    });
+
     res.send(result);
 });
 
@@ -177,6 +186,15 @@ app.delete("/:postId/likes/:profileId", async (req, res) => {
                 [Op.eq]: profileId,
             },
         }
+    });
+
+    // decrement like count
+    await comments.decrement('likesCount', {
+        where: {
+            "id": {
+                [Op.eq]: commentId,
+            },
+        },
     });
 
     res.send(result ? "post unliked successfully!!" : "error occured");

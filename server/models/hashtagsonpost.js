@@ -11,12 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       this.belongsTo(models.posts);
-      this.belongsTo(models.hastags);
+      this.belongsTo(models.hashtags);
     }
   }
   hashtagsOnPost.init({
-    postId: DataTypes.INTEGER,
-    hashtagId: DataTypes.INTEGER
+    postId: { type: DataTypes.INTEGER, allowNull: false },
+    hashtagId: { type: DataTypes.INTEGER, allowNull: false }
   }, {
     sequelize,
     modelName: 'hashtagsOnPost',

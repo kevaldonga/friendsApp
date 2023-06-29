@@ -1,5 +1,5 @@
 const app = require('express').Router();
-const { comments, likesOnComment } = require('../models');
+const { comments, likesOnComment, posts } = require('../models');
 const bodyParser = require('body-parser');
 const Op = require('sequelize');
 
@@ -9,9 +9,20 @@ app.use(bodyParser.json());
 * / - POST - create a comment
 */
 app.post("/", async (req, res) => {
+    const postId = req.body.postId;
+
     result = await comments.create(req.body);
 
-    res.send(result ? "comment has beeen successfully!!" : "error occured");
+    // increment comment count in post
+    await posts.increment('commentsCount', {
+        where: {
+            "id": {
+                [Op.eq]: postId,
+            },
+        },
+    });
+
+    res.send(result ? "comment has been added successfully!!" : "error occured");
 });
 
 /* 
@@ -51,13 +62,23 @@ app.get("/:postId/comments", async (req, res) => {
 /* 
 * /:commentId - DELETE - delete a comment
 */
-app.delete("/:commentId", async (req, res) => {
+app.delete("/:commentId/post/:postId", async (req, res) => {
     const commentId = req.params.commentId;
+    const postId = req.params.postId;
 
     result = await comments.destroy({
         where: {
             "id": {
                 [Op.eq]: commentId,
+            },
+        },
+    });
+
+    // decrement comment count in post
+    await posts.decrement('commentsCount', {
+        where: {
+            "id": {
+                [Op.eq]: postId,
             },
         },
     });
@@ -108,6 +129,14 @@ app.post("/:commentId/likes/:profileId", async (req, res) => {
 
     result = await likesOnComment.create({ "commentId": commentId, "profileId": profileId });
 
+    // increment like count
+    await comments.increment('likesCount', {
+        where: {
+            "id": {
+                [Op.eq]: commentId,
+            },
+        },
+    });
     res.send(result);
 });
 
@@ -127,6 +156,15 @@ app.delete("/:commentId/likes/:profileId", async (req, res) => {
                 [Op.eq]: profileId
             }
         }
+    });
+
+    // decrement like count
+    await comments.decrement('likesCount', {
+        where: {
+            "id": {
+                [Op.eq]: commentId,
+            },
+        },
     });
 
     res.send(result);
