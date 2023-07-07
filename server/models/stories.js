@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     profileId: { type: DataTypes.INTEGER, allowNull: false },
     likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     media: { type: DataTypes.STRING, allowNull: false },
-    description: DataTypes.STRING
+    description: { type: DataTypes.STRING, allowNull: true, validate: { len: [15, 255] } },
   }, {
     sequelize,
     modelName: 'stories',

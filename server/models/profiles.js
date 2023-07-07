@@ -14,10 +14,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   profiles.init({
-    username: { type: DataTypes.STRING, allowNull: false },
-    bio: { type: DataTypes.STRING, allowNull: true },
+    username: { type: DataTypes.STRING, allowNull: false, validate: { len: [5, 30] } },
+    bio: { type: DataTypes.STRING, allowNull: true, validate: { len: [20, 255] } },
     isActive: { type: DataTypes.BOOLEAN, allowNull: true },
-    note: { type: DataTypes.STRING, allowNull: true },
+    note: { type: DataTypes.STRING, allowNull: true, validate: { len: [5, 20] } },
     userId: { type: DataTypes.INTEGER, allowNull: false },
     followers: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
     followings: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 }

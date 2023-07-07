@@ -1,7 +1,8 @@
 const app = require('express').Router();
 const bodyParser = require('body-parser');
 const { Op } = require('sequelize');
-const { stories, hashtagsOnStory, likesOnStory } = require('../models');
+const { stories, hashtagsOnStory, likesOnStory, profiles } = require('../models');
+const { nullCheck } = require('./validations/nullcheck');
 
 app.use(bodyParser.json());
 
@@ -9,116 +10,281 @@ app.use(bodyParser.json());
 * / - POST - create a story
 */
 app.post("/", async (req, res) => {
-    result = await stories.create(req.body);
+    value = nullCheck(body, { nonNullableFields: ['profileId', 'media'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
 
-    res.send(result ? "story created successfully!!" : "error occured");
+    await stories.create(req.body)
+        .then((result) => {
+            res.send("tag created successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId - GET - get a story
+* /:storyUUID - GET - get a story
 */
-app.post("/:storyId", async (req, res) => {
-    const storyId = req.params.storyId;
+app.post("/:storyUUID", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    let error = false;
 
     result = await stories.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: storyUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const storyId = result.id;
+
+    await stories.findOne({
         where: {
             "id": {
                 [Op.eq]: storyId,
             }
         }
-    });
-
-    res.send(result);
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /profileId/stories - GET - get all stories of a profile
+* /profileUUID/stories - GET - get all stories of a profile
 */
-app.get("/profile/:profileId", async (req, res) => {
-    const profileId = req.params.profileId;
+app.get("/profile/:profileUUID", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
 
-    result = await stories.findAll({
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
+
+    await stories.findAll({
         where: {
             "profileId": {
                 [Op.eq]: profileId,
             }
-        }
-    });
-
-    res.send(result);
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId - PUT - update a story
+* /:storyUUID - PUT - update a story
 */
-app.put("/:storyId", async (req, res) => {
-    const storyId = req.params.storyId;
+app.put("/:storyUUID", async (req, res) => {
+    value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
 
-    result = await stories.update(req.body, {
+    const storyUUID = req.params.storyUUID;
+
+    await stories.update(req.body, {
         where: {
-            "id": {
-                [Op.eq]: storyId,
+            "uuid": {
+                [Op.eq]: storyUUID,
             }
         }
-    });
-
-    res.send(result ? "story updated successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("story updated successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId - delete - delete a story
+* /:storyUUID - delete - delete a story
 */
-app.delete("/:storyId", async (req, res) => {
-    const storyId = req.params.storyId;
+app.delete("/:storyUUID", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
 
-    result = await stories.delete({
+    await stories.delete({
         where: {
-            "id": {
-                [Op.eq]: storyId,
+            "uuid": {
+                [Op.eq]: storyUUID,
             }
         }
-    });
-
-    res.send(result ? "story deleted successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("story deleted successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId/hastags - get all hashtags in a story
+* /:storyUUID/hastags - get all hashtags in a story
 */
-app.get("/:storyId/hashtags", async (req, res) => {
-    const storyId = req.params.storyId;
+app.get("/:storyUUID/hashtags", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
 
-    result = await hashtagsOnStory.findAll({
+    result = await stories.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: storyUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const storyId = result.id;
+
+    await hashtagsOnStory.findAll({
         where: {
             "storyId": {
                 [Op.eq]: storyId,
             }
         },
-    });
-
-    res.send(result);
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /*
-* /:storyId/hashtags/hashtagId - POST - add a hashtag in a story
+* /:storyUUID/hashtags/:hashtagUUID - POST - add a hashtag in a story
 */
-app.post("/:storyId/hashtags/hashtagId", async (req, res) => {
-    const storyId = req.params.storyId;
-    const hashtagId = req.params.hashtagId;
+app.post("/:storyUUID/hashtags/:hashtagUUID", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
 
-    result = await hashtagsOnStory.create({ "storyId": storyId, "hashtagId": hashtagId });
+    result = await stories.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: storyUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "hashtag added successfully!!" : "error occured");
+    if (error) return;
+
+    const storyId = result.id;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+
+    const hashtagId = result.id;
+
+    await hashtagsOnStory.create({ "storyId": storyId, "hashtagId": hashtagId })
+        .then((result) => {
+            res.send("hashtag added in story successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId/hastags/:hashtagId - remove a hashtag in a story
+* /:storyUUID/hastags/:hashtagUUID - remove a hashtag in a story
 */
-app.delete("/:storyId/hashtags/:hashtagId", async (req, res) => {
-    const storyId = req.params.storyId;
-    const hashtagId = req.params.hashtagId;
+app.delete("/:storyUUID/hashtags/:hashtagUUID", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
 
-    result = await hashtagsOnStory.destory({
+    result = await stories.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: storyUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const storyId = result.id;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    await hashtagsOnStory.destory({
         where: {
             "storyId": {
                 [Op.eq]: storyId,
@@ -127,36 +293,99 @@ app.delete("/:storyId/hashtags/:hashtagId", async (req, res) => {
                 [Op.eq]: hashtagId,
             },
         }
-    });
-
-    res.send(result ? "hashtag removed successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("hashtag removed successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId/likes - GET - get likes on a story
+* /:storyUUID/likes - GET - get likes on a story
 */
-app.get("/:storyId/likes", async (req, res) => {
-    const storyId = req.params.storyId;
+app.get("/:storyUUID/likes", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit); 4
+    let error = false;
 
-    result = await likesOnStory.findAll({
+    result = await stories.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: storyUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const storyId = result.id;
+
+    await likesOnStory.findAll({
         where: {
             "storyId": {
                 [Op.eq]: storyId,
-            }
-        }
-    });
-
-    res.send(result);
+            },
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId/like/:profileId - POST - like on a story
+* /:profileUUID/like/:storyUUID - POST - like on a story
 */
-app.post("/:storyId/likes/:profileId", async (req, res) => {
-    const storyId = req.params.storyId;
-    const profileId = req.params.profileId;
+app.post("/:profileUUID/likes/:storyUUID", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    const profileUUID = req.params.profileUUID;
+    let error = false;
 
-    result = await likesOnStory.create({ "storyId": storyId, "profileId": profileId });
+    result = await stories.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: storyUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const storyId = result.id;
+
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
 
     // increment likes count in story
     await stories.increment('likesCount', {
@@ -165,28 +394,64 @@ app.post("/:storyId/likes/:profileId", async (req, res) => {
                 [Op.eq]: storyId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "liked on story successfully!!" : "error occured");
+    if (error) return;
+
+    await likesOnStory.create({ "storyId": storyId, "profileId": profileId })
+        .then((result) => {
+            res.send("liked on story successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:storyId/likes/:profileId - DELETE - unlike on a story
+* /:profileUUID/likes/:storyUUID - DELETE - unlike on a story
 */
-app.delete("/:storyId/likes/:profileId", async (req, res) => {
-    const storyId = req.params.storyId;
-    const profileId = req.params.profileId;
+app.delete("/:profileUUID/likes/:storyUUID", async (req, res) => {
+    const storyUUID = req.params.storyUUID;
+    const profileUUID = req.params.profileUUID;
+    let error = false;
 
-    result = await likesOnStory.destroy({
+    result = await stories.findOne({
         where: {
-            "storyId": {
-                [Op.eq]: storyId
+            "uuid": {
+                [Op.eq]: storyUUID,
             },
-            "profileId": {
-                [Op.eq]: profileId
-            }
-        }
-    });
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;;
+
+    const storyId = result.id;
+
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
 
     // decrement likes count in story
     await stories.decrement('likesCount', {
@@ -195,9 +460,30 @@ app.delete("/:storyId/likes/:profileId", async (req, res) => {
                 [Op.eq]: storyId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "unliked story successfully!!" : "error occured");
+    if (error) return;
+
+    await likesOnStory.destroy({
+        where: {
+            "storyId": {
+                [Op.eq]: storyId
+            },
+            "profileId": {
+                [Op.eq]: profileId
+            }
+        }
+    })
+        .then((result) => {
+            res.send("unliked story successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 module.exports = app;

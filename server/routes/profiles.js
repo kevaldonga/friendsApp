@@ -2,104 +2,226 @@ const app = require('express').Router();
 const bodyParser = require('body-parser');
 const { profiles, hashtagsOnProfiles } = require('../models');
 const { Op } = require('sequelize');
+const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
 
 app.use(bodyParser.json());
 
 /* 
-* /:profileId - GET - get a profile
+* /:profileUUID - GET - get a profile
 */
-app.get("/:profileId", async (req, res) => {
-    const profileId = req.params.profileId;
+app.get("/:profileUUID", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
 
-    result = await profiles.findOne({
+    await profiles.findOne({
         where: {
-            "id": {
-                [Op.eq]: profileId,
+            "uuid": {
+                [Op.eq]: profileUUID,
             },
         }
-    });
-
-    res.send(result);
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
 * / - POST - create a profile
 */
 app.post("/", async (req, res) => {
-    result = await profiles.create(req.body);
+    value = nullCheck(body, { nonNullableFields: ['username', 'userId'], mustBeNullFields: [...defaultNullFields, 'isActive', 'followers', 'followings'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
 
-    res.send(result ? "profile created successfully!!" : "error occured");
+    await profiles.create(req.body)
+        .then((result) => {
+            res.send("profile created successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /*
-* /:profileId - PUT - update a profile
+* /:profileUUID - PUT - update a profile
 */
-app.put("/:profileId", async (req, res) => {
-    const profileId = req.params.profileId;
+app.put("/:profileUUID", async (req, res) => {
+    value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'userId', 'followers', 'followings', 'isActive'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
 
-    result = await profiles.update(req.body, {
+    const profileUUID = req.params.profileUUID;
+
+    await profiles.update(req.body, {
         where: {
-            "id": profileId,
+            "uuid": profileUUID,
         }
-    });
-
-    res.send(result);
+    })
+        .then((result) => {
+            res.send("profile updated successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:profileId - DELETE - delete a profile
+* /:profileUUID - DELETE - delete a profile
 */
-app.delete("/:profileId", async (req, res) => {
-    const profileId = req.params.profileId;
+app.delete("/:profileUUID", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
 
-    result = profiles.destroy({
+    profiles.destroy({
         where: {
-            "id": {
-                [Op.eq]: profileId,
+            "uuid": {
+                [Op.eq]: profileUUID,
             }
         }
-    });
-
-    res.send(result ? "profile deleted successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("profile deleted successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:profileId/hashtags - GET - get all hashtags in a profile
+* /:profileUUID/hashtags - GET - get all hashtags in a profile
 */
-app.get("/:profileId/hashtags", async (req, res) => {
-    const profileId = req.params.profileId;
+app.get("/:profileUUID/hashtags", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
 
-    result = await hashtagsOnProfiles.findAll({
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
+
+    await hashtagsOnProfiles.findAll({
         where: {
             "profileId": {
                 [Op.eq]: profileId,
             },
-        }
-    });
-
-    res.send(result);
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /*
-* /:profileId/hashtags/:hashtagId - POST - add a hashtag in a profile
+* /:profileUUID/hashtags/:hashtagUUID - POST - add a hashtag in a profile
 */
-app.post("/:profileId/hashtags/:hashtagId", async (req, res) => {
-    const profileId = req.params.profileId;
-    const hasgtagId = req.params.hashtagId;
+app.post("/:profileUUID/hashtags/:hashtagUUID", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
 
-    result = await hashtagsOnProfiles.create({ "profileId": profileId, "hashtagId": hashtagId });
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "hashtag added successfully!!" : "error occured");
+    if (error) return;
+
+    const profileId = result.id;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+
+    const hashtagId = result.id;
+
+    await hashtagsOnProfiles.create({ "profileId": profileId, "hashtagId": hashtagId })
+        .then((result) => {
+            res.send("hashtag added successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:profileId/hashtags/:hasgtagId - GET - delete a hashtag on a profile
+* /:profileUUID/hashtags/:hasgtagUUID - GET - delete a hashtag on a profile
 */
-app.delete("/:profileId/hashtags/hashtagId", async (req, res) => {
-    const profileId = req.params.profileId;
-    const hashtagId = req.params.hashtagId;
+app.delete("/:profileUUID/hashtags/hashtagUUID", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
 
-    result = await hashtagsOnProfiles.destroy({
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    await hashtagsOnProfiles.destroy({
         where: {
             "profileId": {
                 [Op.eq]: profileId,
@@ -108,9 +230,13 @@ app.delete("/:profileId/hashtags/hashtagId", async (req, res) => {
                 [Op.eq]: hashtagId,
             },
         }
-    });
-
-    res.send(result ? "hashtag deleted successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("hashtag removed successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 module.exports = app;

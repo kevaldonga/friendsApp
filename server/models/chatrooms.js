@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
   chatrooms.init({
     profileId1: { type: DataTypes.INTEGER, allowNull: false },
     profileId2: { type: DataTypes.INTEGER, allowNull: false },
-    background: DataTypes.STRING
+    background: { type: DataTypes.STRING, allowNull: false },
   }, {
     sequelize,
     modelName: 'chatrooms',

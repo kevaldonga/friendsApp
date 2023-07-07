@@ -10,14 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.hasOne(models.profiles, { as: "profiles", foreignKey: "profileId", sourceKey: "id" });
+      this.hasOne(models.profiles, { as: "profiles", foreignKey: "userId", sourceKey: "id" });
     }
   }
   users.init({
     uid: { type: DataTypes.STRING, allowNull: false },
-    email: { type: DataTypes.STRING, allowNull: false },
-    phoneno: DataTypes.STRING,
-    countryCode: DataTypes.STRING
+    email: { type: DataTypes.STRING, allowNull: false, validate: { len: [10, 100] } },
+    phoneno: { type: DataTypes.STRING, allowNull: true, validate: { len: [10, 15] } },
+    countryCode: { type: DataTypes.STRING, allowNull: true, validate: { len: [3, 7] } }
   }, {
     sequelize,
     modelName: 'users',

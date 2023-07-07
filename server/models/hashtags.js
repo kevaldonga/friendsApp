@@ -16,10 +16,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   hashtags.init({
-    tag: { type: DataTypes.STRING, allowNull: false },
-    description: DataTypes.STRING,
+    tag: { type: DataTypes.STRING, allowNull: false, validate: { len: [5, 50] } },
+    description: { type: DataTypes.STRING, allowNull: false, validate: { len: [30, 255] } },
     color: { type: DataTypes.STRING, allowNull: false },
-    image: DataTypes.STRING,
+    image: { type: DataTypes.STRING, allowNull: false },
   }, {
     sequelize,
     modelName: 'hashtags',

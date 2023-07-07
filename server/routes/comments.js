@@ -2,6 +2,7 @@ const app = require('express').Router();
 const { comments, likesOnComment, posts } = require('../models');
 const bodyParser = require('body-parser');
 const Op = require('sequelize');
+const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
 
 app.use(bodyParser.json());
 
@@ -9,9 +10,9 @@ app.use(bodyParser.json());
 * / - POST - create a comment
 */
 app.post("/", async (req, res) => {
-    const postId = req.body.postId;
-
-    result = await comments.create(req.body);
+    value = nullCheck(body, { nonNullableFields: ['postId', 'comment', 'profileId'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
+    let error = false;
 
     // increment comment count in post
     await posts.increment('commentsCount', {
@@ -20,59 +21,146 @@ app.post("/", async (req, res) => {
                 [Op.eq]: postId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "comment has been added successfully!!" : "error occured");
+    if (error) return;
+
+    await comments.create(req.body)
+        .then((result) => {
+            res.send("comment has been added successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:commentId - GET - get a comment
+* /:commentUUID - GET - get a comment
 */
-app.get("/:commentId", async (req, res) => {
-    const commentId = req.params.commentId;
+app.get("/:commentUUID", async (req, res) => {
+    const commentUUID = req.params.commentUUID;
+    let error = false;
 
     result = await comments.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: commentUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const commentId = result.id;
+
+    await comments.findOne({
         where: {
             "id": {
                 [Op.eq]: commentId,
             },
         },
-    });
-
-    res.send(result);
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId/comments - GET - get all comments of post
+* /:postUUID/comments - GET - get all comments of post
 */
-app.get("/:postId/comments", async (req, res) => {
-    const postId = req.params.postId;
+app.get("/:postUUID/comments", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
 
-    result = await comments.findAll({
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    await comments.findAll({
         where: {
             "postId": {
                 [Op.eq]: postId,
             },
         },
-    });
-
-    res.send(result);
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:commentId - DELETE - delete a comment
+* /:commentUUID/post/:postUUID - DELETE - delete a comment
 */
-app.delete("/:commentId/post/:postId", async (req, res) => {
-    const commentId = req.params.commentId;
-    const postId = req.params.postId;
+app.delete("/:commentUUID/post/:postUUID", async (req, res) => {
+    const commentUUID = req.params.commentUUID;
+    const postUUID = req.params.postUUID;
+    let error = false;
 
-    result = await comments.destroy({
+    result = await comments.findOne({
         where: {
-            "id": {
-                [Op.eq]: commentId,
+            "uuid": {
+                [Op.eq]: commentUUID,
             },
         },
-    });
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const commentId = result.id;
+
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
 
     // decrement comment count in post
     await posts.decrement('commentsCount', {
@@ -81,53 +169,155 @@ app.delete("/:commentId/post/:postId", async (req, res) => {
                 [Op.eq]: postId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "comment deleted successfully!!" : "error occured");
-});
+    if (error) return;
 
-/* 
-* /:commentId - PUT - update a comment
-*/
-app.put("/:commentId", async (req, res) => {
-    const commentId = req.params.commentId;
-
-    result = await comments.update(req.body, {
+    await comments.destroy({
         where: {
             "id": {
                 [Op.eq]: commentId,
             },
         },
-    });
-
-    res.send(result ? "comment updated successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("comment removed successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:commentId/likes - GET - get likes on a comment
+* /:commentUUID - PUT - update a comment
 */
-app.get("/:commentId/likes", async (req, res) => {
-    const commentId = req.params.commentId;
+app.put("/:commentUUID", async (req, res) => {
+    value = nullCheck(body, { nonNullableFields: ['comment'], mustBeNullFields: [...defaultNullFields, 'profileId', 'postId', 'likesCount'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
+    let error = false;
 
-    result = await likesOnComment.findAll({
+    const commentUUID = req.params.commentUUID;
+
+    result = await comments.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: commentUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const commentId = result.id;
+
+    await comments.update(req.body, {
+        where: {
+            "id": {
+                [Op.eq]: commentId,
+            },
+        },
+    })
+        .then((result) => {
+            res.send("comment updated successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
+});
+
+/* 
+* /:commentUUID/likes - GET - get likes on a comment
+*/
+app.get("/:commentUUID/likes", async (req, res) => {
+    const commentUUID = req.params.commentUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
+
+    result = await comments.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: commentUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const commentId = result.id;
+
+    await likesOnComment.findAll({
         where: {
             "commentId": {
                 [Op.eq]: commentId,
-            }
-        }
-    });
-
-    res.send(result);
+            },
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:commentId/likes/:profileId - POST - like on a comment
+* /:profileUUID/likes/:commentUUID - POST - like on a comment
 */
-app.post("/:commentId/likes/:profileId", async (req, res) => {
-    const commentId = req.params.commentId;
-    const profileId = req.params.profileId;
+app.post("/:profileUUID/likes/:commentUUID", async (req, res) => {
+    const commentUUID = req.params.commentUUID;
+    const profileUUID = req.params.profileUUID;
+    let error = false;
 
-    result = await likesOnComment.create({ "commentId": commentId, "profileId": profileId });
+    result = await comments.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: commentUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const commentId = result.id;
+
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
 
     // increment like count
     await comments.increment('likesCount', {
@@ -136,27 +326,64 @@ app.post("/:commentId/likes/:profileId", async (req, res) => {
                 [Op.eq]: commentId,
             },
         },
-    });
-    res.send(result);
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    await likesOnComment.create({ "commentId": commentId, "profileId": profileId })
+        .then((result) => {
+            res.send("coment liked successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:commentId/likes/:profileId - DELETE - unlike a comment
+* /:profileUUID/likes/:commentUUID - DELETE - unlike a comment
 */
-app.delete("/:commentId/likes/:profileId", async (req, res) => {
-    const commentId = req.params.commentId;
-    const profileId = req.params.profileId;
+app.delete("/:profileUUID/likes/:commentUUID", async (req, res) => {
+    const commentUUID = req.params.commentUUID;
+    const profileUUID = req.params.profileUUID;
+    let error = false;
 
-    result = await likesOnComment.destroy({
+    result = await comments.findOne({
         where: {
-            "commentId": {
-                [Op.eq]: commentId
+            "uuid": {
+                [Op.eq]: commentUUID,
             },
-            "profileId": {
-                [Op.eq]: profileId
-            }
-        }
-    });
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const commentId = result.id;
+
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
 
     // decrement like count
     await comments.decrement('likesCount', {
@@ -165,9 +392,30 @@ app.delete("/:commentId/likes/:profileId", async (req, res) => {
                 [Op.eq]: commentId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result);
+    if (error) return;
+
+    await likesOnComment.destroy({
+        where: {
+            "commentId": {
+                [Op.eq]: commentId
+            },
+            "profileId": {
+                [Op.eq]: profileId
+            }
+        }
+    })
+        .then((result) => {
+            res.send("comment unliked successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 module.exports = app;

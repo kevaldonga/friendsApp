@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   comments.init({
     profileId: { type: DataTypes.INTEGER, allowNull: false },
     postId: { type: DataTypes.INTEGER, allowNull: false },
-    comment: { type: DataTypes.STRING, allowNull: false },
+    comment: { type: DataTypes.STRING, allowNull: false, validate: { len: [10, 255] } },
     likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   }, {
     sequelize,

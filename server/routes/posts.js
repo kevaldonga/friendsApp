@@ -1,162 +1,419 @@
 const app = require('express').Router();
 const bodyParser = require('body-parser');
-const { posts, hashtagsOnPost, likesOnPost } = require('../models');
+const { posts, hashtagsOnPost, likesOnPost, profiles } = require('../models');
 const { Op } = require('sequelize');
+const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
 
 app.use(bodyParser.json());
 
 /*
-* /:postId - GET - get post
+* /:postUUID - GET - get post
 */
-app.get("/:postId", async (req, res) => {
-    const postId = req.params.postId;
+app.get("/:postUUID", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    let error = false;
 
     result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    await posts.findOne({
         where: {
             "id": {
                 [Op.eq]: postId,
             }
         }
-    });
-
-    res.send(result);
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /*
-* /:profileId/posts - GET - get all post of profile
+* /:profileUUID/posts - GET - get all post of profile
 */
-app.get("/:profileId/posts", async (req, res) => {
-    const profileId = req.params.profileId;
+app.get("/:profileUUID/posts", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
 
-    result = await posts.findAll({
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
+
+    await posts.findAll({
         where: {
             "profileId": {
                 [Op.eq]: profileId,
             }
-        }
-    });
-
-    res.send(result);
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /*
 * / - POST - create post
 */
 app.post("/", async (req, res) => {
-    result = await posts.create(req.body);
+    value = nullCheck(body, { nonNullableFields: ['profileId', 'title', 'media',], mustBeNullFields: [...defaultNullFields, 'likesCount', 'commentsCount'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
 
-    res.send(result ? "post created successfully!!" : "error occured");
+    await posts.create(req.body)
+        .then((result) => {
+            res.send("post created successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId - PUT - update post
+* /:postUUID - PUT - update post
 */
-app.put("/:postId", async (req, res) => {
-    const postId = req.params.posts;
+app.put("/:postUUID", async (req, res) => {
+    value = nullCheck(body, { nonNullableFields: ['title', 'media'], mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount', 'commentsCount'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
+    let error = false;
 
-    result = await posts.update(req.body, {
+    const postUUID = req.params.postUUID;
+
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    await posts.update(req.body, {
         where: {
             "id": {
                 [Op.eq]: postId,
             }
         }
-    });
-
-    res.send(result ? "post updated successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("post updated successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId - DELETE - delete post
+* /:postUUID - DELETE - delete post
 */
-app.delete("/:postId", async (req, res) => {
-    const postId = req.params.posts;
+app.delete("/:postUUID", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    let error = false;
 
-    result = await posts.destory({
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    await posts.destory({
         where: {
             "id": {
                 [Op.eq]: postId,
             }
         }
-    });
-
-    res.send(result ? "post deleted successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("post deleted successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId/hashtags - GET - get all hashtags of post
+* /:postUUID/hashtags - GET - get all hashtags of post
 */
-app.get("/:postId/hashtags", async (req, res) => {
-    const postId = req.params.posts;
+app.get("/:postUUID/hashtags", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
 
-    result = await hashtagsOnPost.findAll({
+    result = await posts.findOne({
         where: {
-            "postId": {
-                [Op.eq]: postId,
-            }
-        }
-    });
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result);
-});
+    if (error) return;
 
-/* 
-* /:postId/hashtags/:hashtagId - POST - add hashtag in post
-*/
-app.post("/:postId/hashtags/:hashtagId", async (req, res) => {
-    const postId = req.params.postId;
-    const hashtagId = req.params.hashtagId;
+    const postId = result.id;
 
-    result = await likesOnPost.create({ "postId": postId, "hashtagId": hashtagId });
-
-    res.send(result);
-});
-
-/* 
-* /:postId/hashtags/:hasgtagId - GET - delete hashtag on post
-*/
-app.delete("/:postId/hashtags/:hashtagId", async (req, res) => {
-    const postId = req.params.postId;
-    const hashtagId = req.params.hashtagId;
-
-    result = await hashtagsOnPost.destroy({
+    await hashtagsOnPost.findAll({
         where: {
             "postId": {
                 [Op.eq]: postId,
             },
-            "hashtagId": {
-                [Op.eq]: hashtagId,
-            },
-        }
-    });
-
-    res.send(result ? "hashtag deleted successfully!!" : "error occured");
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId/likes - GET - get likes on post
+* /:postUUID/hashtags/:hashtagUUID - POST - add hashtag in post
 */
-app.get("/:postId/likes", async (req, res) => {
-    const postId = req.params.postId;
+app.post("/:postUUID/hashtags/:hashtagUUID", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
 
-    result = await likesOnPost.findAll({
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    result = await hashatags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const hashtagId = result.id;
+
+    await hashtagsOnPost.create({ "postId": postId, "hashtagId": hashtagId })
+        .then((result) => {
+            res.send("hashtag added on post successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
+});
+
+/* 
+* /:postUUID/hashtags/:hashtagUUID - DELETE - remove hashtag in post
+*/
+app.delete("/:postUUID/hashtags/:hashtagUUID", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
+
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    result = await hashatags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const hashtagId = result.id;
+
+    await hashtagsOnPost.destroy({ "postId": postId, "hashtagId": hashtagId })
+        .then((result) => {
+            res.send("hashtag removed successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
+});
+
+/* 
+* /:postUUID/likes - GET - get likes on post
+*/
+app.get("/:postUUID/likes", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+    let error = false;
+
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    await likesOnPost.findAll({
         where: {
             "postId": {
                 [Op.eq]: postId,
             },
-        }
-    });
-
-    res.send(result);
+        },
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId/likes/:profileId - POST - like a post
+* /:profileUUID/likes/:postUUID - POST - like a post
 */
-app.post("/:postId/likes/:profileId", async (req, res) => {
-    const profileId = req.params.profileId;
-    const postId = req.params.postId;
+app.post("/:profileUUID/likes/:postUUID", async (req, res) => {
+    const profileUUID = req.params.profileUUID;
+    const postUUID = req.params.postUUID;
+    let error = false;
 
-    result = await likesOnPost.create({ "postId": postId, "profileId": profileId });
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
 
     // increment like count
     await comments.increment('likesCount', {
@@ -165,28 +422,65 @@ app.post("/:postId/likes/:profileId", async (req, res) => {
                 [Op.eq]: postId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result);
+    if (error) return;
+
+    await likesOnPost.create({ "postId": postId, "profileId": profileId })
+        .then((result) => {
+            res.send("liked on post successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
-* /:postId//likes/:profileId - GET - unlike post
+* /:profileUUID/likes/:postUUID - GET - unlike post
 */
-app.delete("/:postId/likes/:profileId", async (req, res) => {
-    const postId = req.params.postId;
-    const profileId = req.params.profileId;
+app.delete("/:profileUUID/likes/:postUUID", async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const profileUUID = req.params.profileUUID;
+    let error = false;
 
-    result = await likesOnPost.destory({
+    result = await posts.findOne({
         where: {
-            "postId": {
-                [Op.eq]: postId,
+            "uuid": {
+                [Op.eq]: postUUID,
             },
-            "profileId": {
-                [Op.eq]: profileId,
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const postId = result.id;
+
+    result = await profiles.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: profileUUID,
             },
-        }
-    });
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
+
+    if (error) return;
+
+    const profileId = result.id;
+
 
     // decrement like count
     await comments.decrement('likesCount', {
@@ -195,9 +489,30 @@ app.delete("/:postId/likes/:profileId", async (req, res) => {
                 [Op.eq]: commentId,
             },
         },
-    });
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err.message);
+        });
 
-    res.send(result ? "post unliked successfully!!" : "error occured");
+    if (error) return;
+
+    await likesOnPost.destory({
+        where: {
+            "postId": {
+                [Op.eq]: postId,
+            },
+            "profileId": {
+                [Op.eq]: profileId,
+            },
+        }
+    })
+        .then((result) => {
+            res.send("post unliked successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 module.exports = app;

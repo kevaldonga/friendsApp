@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   chats.init({
     chatroomId: { type: DataTypes.INTEGER, allowNull: false },
-    chat: { type: DataTypes.STRING, allowNull: false },
+    chat: { type: DataTypes.STRING, allowNull: false, validate: { len: [10, 255] } },
     sendStatus: { type: DataTypes.INTEGER, allowNull: false, defaultValue: -1 },
     /* 
     * -1 - failed

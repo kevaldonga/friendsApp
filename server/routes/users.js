@@ -2,6 +2,7 @@ const app = require('express').Router();
 const bodyParser = require('body-parser');
 const { Op } = require('sequelize');
 const { users } = require('../models');
+const { nullCheck } = require('./validations/nullcheck');
 
 app.use(bodyParser.json());
 
@@ -11,41 +12,59 @@ app.use(bodyParser.json());
 app.get("/:uid", async (req, res) => {
     const uid = req.params.uid;
 
-    result = await users.findOne({
+    await users.findOne({
         where: {
             "uid": {
                 [Op.eq]: uid,
             }
         }
-    });
-
-    res.send(result);
+    })
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
 * / - POST - create the user
 */
 app.post("/", async (req, res) => {
-    result = await users.create(req.body);
+    value = nullCheck(body, { nonNullableFields: ['uid', 'email'], mustBeNullFields: [...defaultNullFields] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
 
-    res.send(result ? "user created successfully!!" : "error occured");
+    await users.create(req.body)
+        .then((result) => {
+            res.send("user created successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
 * / - PUT - update the user
 */
 app.put("/:uid", async (req, res) => {
+    value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'uid'] });
+    if (typeof (value) == 'string') return res.status(409).send(value);
+
     const uid = req.params.uid;
 
-    result = await users.update(req.body, {
+    await users.update(req.body, {
         where: {
             "uid": {
                 [Op.eq]: uid,
             }
         }
-    });
-
-    res.send(result ? "user updated successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("user updated successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 /* 
@@ -54,15 +73,19 @@ app.put("/:uid", async (req, res) => {
 app.delete("/:uid", async (req, res) => {
     const uid = req.params.uid;
 
-    result = await users.destroy(req.body, {
+    await users.destroy({
         where: {
             "uid": {
                 [Op.eq]: uid,
             }
         }
-    });
-
-    res.send(result ? "user deleted successfully!!" : "error occured");
+    })
+        .then((result) => {
+            res.send("user deleted successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
 });
 
 module.exports = app;
