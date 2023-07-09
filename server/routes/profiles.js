@@ -3,13 +3,15 @@ const bodyParser = require('body-parser');
 const { profiles, hashtagsOnProfiles } = require('../models');
 const { Op } = require('sequelize');
 const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
+const { jwtcheck, authorizeProfileUUID } = require('../middleware/jwtcheck');
 
 app.use(bodyParser.json());
 
 /* 
 * /:profileUUID - GET - get a profile
+* @check check jwt signature, match profile uuid from payload
 */
-app.get("/:profileUUID", async (req, res) => {
+app.get("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
 
     await profiles.findOne({
@@ -29,8 +31,9 @@ app.get("/:profileUUID", async (req, res) => {
 
 /* 
 * / - POST - create a profile
+* @check check jwt signature
 */
-app.post("/", async (req, res) => {
+app.post("/", jwtcheck, async (req, res) => {
     value = nullCheck(body, { nonNullableFields: ['username', 'userId'], mustBeNullFields: [...defaultNullFields, 'isActive', 'followers', 'followings'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
@@ -45,8 +48,9 @@ app.post("/", async (req, res) => {
 
 /*
 * /:profileUUID - PUT - update a profile
+* @check check jwt signature, match profileuuid from payload
 */
-app.put("/:profileUUID", async (req, res) => {
+app.put("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'userId', 'followers', 'followings', 'isActive'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
@@ -67,8 +71,9 @@ app.put("/:profileUUID", async (req, res) => {
 
 /* 
 * /:profileUUID - DELETE - delete a profile
+* @check check jwt signature, match profile uuid from payload
 */
-app.delete("/:profileUUID", async (req, res) => {
+app.delete("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
 
     profiles.destroy({
@@ -88,8 +93,9 @@ app.delete("/:profileUUID", async (req, res) => {
 
 /* 
 * /:profileUUID/hashtags - GET - get all hashtags in a profile
+* @check check jwt signature, match profile uuid from payload
 */
-app.get("/:profileUUID/hashtags", async (req, res) => {
+app.get("/:profileUUID/hashtags", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -131,8 +137,9 @@ app.get("/:profileUUID/hashtags", async (req, res) => {
 
 /*
 * /:profileUUID/hashtags/:hashtagUUID - POST - add a hashtag in a profile
+* @check check jwt signature, match profile uuid from payload
 */
-app.post("/:profileUUID/hashtags/:hashtagUUID", async (req, res) => {
+app.post("/:profileUUID/hashtags/:hashtagUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const hashtagUUID = req.params.hashtagUUID;
     let error = false;
@@ -183,8 +190,9 @@ app.post("/:profileUUID/hashtags/:hashtagUUID", async (req, res) => {
 
 /* 
 * /:profileUUID/hashtags/:hasgtagUUID - GET - delete a hashtag on a profile
+* @check check jwt signature, match profileuuid from payload
 */
-app.delete("/:profileUUID/hashtags/hashtagUUID", async (req, res) => {
+app.delete("/:profileUUID/hashtags/hashtagUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const hashtagUUID = req.params.hashtagUUID;
     let error = false;

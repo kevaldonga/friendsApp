@@ -3,13 +3,15 @@ const bodyParser = require('body-parser');
 const { posts, hashtagsOnPost, likesOnPost, profiles } = require('../models');
 const { Op } = require('sequelize');
 const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
+const { jwtcheck, authorizeuid, authorizeProfileUUID } = require('../middleware/jwtcheck');
 
 app.use(bodyParser.json());
 
 /*
 * /:postUUID - GET - get post
+* @check check jwt signature
 */
-app.get("/:postUUID", async (req, res) => {
+app.get("/:postUUID", jwtcheck, async (req, res) => {
     const postUUID = req.params.postUUID;
     let error = false;
 
@@ -47,8 +49,9 @@ app.get("/:postUUID", async (req, res) => {
 
 /*
 * /:profileUUID/posts - GET - get all post of profile
+* @check check jwt signature, match profileuuid from payload
 */
-app.get("/:profileUUID/posts", async (req, res) => {
+app.get("/:profileUUID/posts", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -90,8 +93,9 @@ app.get("/:profileUUID/posts", async (req, res) => {
 
 /*
 * / - POST - create post
+* @check check jwt signature, match uid from payload
 */
-app.post("/", async (req, res) => {
+app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     value = nullCheck(body, { nonNullableFields: ['profileId', 'title', 'media',], mustBeNullFields: [...defaultNullFields, 'likesCount', 'commentsCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
@@ -106,8 +110,9 @@ app.post("/", async (req, res) => {
 
 /* 
 * /:postUUID - PUT - update post
+* @check check jwt signature
 */
-app.put("/:postUUID", async (req, res) => {
+app.put("/:postUUID", jwtcheck, async (req, res) => {
     value = nullCheck(body, { nonNullableFields: ['title', 'media'], mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount', 'commentsCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
@@ -148,8 +153,9 @@ app.put("/:postUUID", async (req, res) => {
 
 /* 
 * /:postUUID - DELETE - delete post
+* @check check jwt signature
 */
-app.delete("/:postUUID", async (req, res) => {
+app.delete("/:postUUID", jwtcheck, async (req, res) => {
     const postUUID = req.params.postUUID;
     let error = false;
 
@@ -187,8 +193,9 @@ app.delete("/:postUUID", async (req, res) => {
 
 /* 
 * /:postUUID/hashtags - GET - get all hashtags of post
+* @check check jwt signature
 */
-app.get("/:postUUID/hashtags", async (req, res) => {
+app.get("/:postUUID/hashtags", jwtcheck, async (req, res) => {
     const postUUID = req.params.postUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -230,8 +237,9 @@ app.get("/:postUUID/hashtags", async (req, res) => {
 
 /* 
 * /:postUUID/hashtags/:hashtagUUID - POST - add hashtag in post
+* @check check jwt signature
 */
-app.post("/:postUUID/hashtags/:hashtagUUID", async (req, res) => {
+app.post("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     const postUUID = req.params.postUUID;
     const hashtagUUID = req.params.hashtagUUID;
     let error = false;
@@ -281,8 +289,9 @@ app.post("/:postUUID/hashtags/:hashtagUUID", async (req, res) => {
 
 /* 
 * /:postUUID/hashtags/:hashtagUUID - DELETE - remove hashtag in post
+* @check check jwt signature
 */
-app.delete("/:postUUID/hashtags/:hashtagUUID", async (req, res) => {
+app.delete("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     const postUUID = req.params.postUUID;
     const hashtagUUID = req.params.hashtagUUID;
     let error = false;
@@ -332,8 +341,9 @@ app.delete("/:postUUID/hashtags/:hashtagUUID", async (req, res) => {
 
 /* 
 * /:postUUID/likes - GET - get likes on post
+* @check check jwt signature
 */
-app.get("/:postUUID/likes", async (req, res) => {
+app.get("/:postUUID/likes", jwtcheck, async (req, res) => {
     const postUUID = req.params.postUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -375,8 +385,9 @@ app.get("/:postUUID/likes", async (req, res) => {
 
 /* 
 * /:profileUUID/likes/:postUUID - POST - like a post
+* @check check jwt signature, match profile uuid from payload
 */
-app.post("/:profileUUID/likes/:postUUID", async (req, res) => {
+app.post("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const postUUID = req.params.postUUID;
     let error = false;
@@ -441,8 +452,9 @@ app.post("/:profileUUID/likes/:postUUID", async (req, res) => {
 
 /* 
 * /:profileUUID/likes/:postUUID - GET - unlike post
+* @check check jwt signature, match profile uuid from payload
 */
-app.delete("/:profileUUID/likes/:postUUID", async (req, res) => {
+app.delete("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const postUUID = req.params.postUUID;
     const profileUUID = req.params.profileUUID;
     let error = false;

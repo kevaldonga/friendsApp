@@ -3,13 +3,15 @@ const bodyParser = require('body-parser');
 const { Op } = require('sequelize');
 const { stories, hashtagsOnStory, likesOnStory, profiles } = require('../models');
 const { nullCheck } = require('./validations/nullcheck');
+const { jwtcheck, authorizeuid, authorizeProfileUUID } = require('../middleware/jwtcheck');
 
 app.use(bodyParser.json());
 
 /* 
 * / - POST - create a story
+* @check check jwt signature, match uid from payload
 */
-app.post("/", async (req, res) => {
+app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     value = nullCheck(body, { nonNullableFields: ['profileId', 'media'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
@@ -24,8 +26,9 @@ app.post("/", async (req, res) => {
 
 /* 
 * /:storyUUID - GET - get a story
+* @check check jwt signature
 */
-app.post("/:storyUUID", async (req, res) => {
+app.post("/:storyUUID", jwtcheck, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     let error = false;
 
@@ -63,8 +66,9 @@ app.post("/:storyUUID", async (req, res) => {
 
 /* 
 * /profileUUID/stories - GET - get all stories of a profile
+* @check check jwt signature, match profile uuid from payload
 */
-app.get("/profile/:profileUUID", async (req, res) => {
+app.get("/profile/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -106,8 +110,9 @@ app.get("/profile/:profileUUID", async (req, res) => {
 
 /* 
 * /:storyUUID - PUT - update a story
+* @check check jwt signature, match profile uuid from payload
 */
-app.put("/:storyUUID", async (req, res) => {
+app.put("/:storyUUID", jwtcheck, async (req, res) => {
     value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
@@ -130,8 +135,9 @@ app.put("/:storyUUID", async (req, res) => {
 
 /* 
 * /:storyUUID - delete - delete a story
+* @check check jwt signature
 */
-app.delete("/:storyUUID", async (req, res) => {
+app.delete("/:storyUUID", jwtcheck, async (req, res) => {
     const storyUUID = req.params.storyUUID;
 
     await stories.delete({
@@ -151,8 +157,9 @@ app.delete("/:storyUUID", async (req, res) => {
 
 /* 
 * /:storyUUID/hastags - get all hashtags in a story
+* @check check jwt signature
 */
-app.get("/:storyUUID/hashtags", async (req, res) => {
+app.get("/:storyUUID/hashtags", jwtcheck, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -194,8 +201,9 @@ app.get("/:storyUUID/hashtags", async (req, res) => {
 
 /*
 * /:storyUUID/hashtags/:hashtagUUID - POST - add a hashtag in a story
+* @check check jwt signature
 */
-app.post("/:storyUUID/hashtags/:hashtagUUID", async (req, res) => {
+app.post("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     const hashtagUUID = req.params.hashtagUUID;
     let error = false;
@@ -246,8 +254,9 @@ app.post("/:storyUUID/hashtags/:hashtagUUID", async (req, res) => {
 
 /* 
 * /:storyUUID/hastags/:hashtagUUID - remove a hashtag in a story
+* @check check jwt signature
 */
-app.delete("/:storyUUID/hashtags/:hashtagUUID", async (req, res) => {
+app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     const hashtagUUID = req.params.hashtagUUID;
     let error = false;
@@ -304,8 +313,9 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", async (req, res) => {
 
 /* 
 * /:storyUUID/likes - GET - get likes on a story
+* @check check jwt signature
 */
-app.get("/:storyUUID/likes", async (req, res) => {
+app.get("/:storyUUID/likes", jwtcheck, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit); 4
@@ -347,8 +357,9 @@ app.get("/:storyUUID/likes", async (req, res) => {
 
 /* 
 * /:profileUUID/like/:storyUUID - POST - like on a story
+* @check check jwt signature, match profile uuid from payload
 */
-app.post("/:profileUUID/likes/:storyUUID", async (req, res) => {
+app.post("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     const profileUUID = req.params.profileUUID;
     let error = false;
@@ -413,8 +424,9 @@ app.post("/:profileUUID/likes/:storyUUID", async (req, res) => {
 
 /* 
 * /:profileUUID/likes/:storyUUID - DELETE - unlike on a story
+* @check check jwt signature, match profile uuid from payload
 */
-app.delete("/:profileUUID/likes/:storyUUID", async (req, res) => {
+app.delete("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const storyUUID = req.params.storyUUID;
     const profileUUID = req.params.profileUUID;
     let error = false;

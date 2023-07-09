@@ -2,7 +2,7 @@ const app = require('express').Router();
 const bodyParser = require('body-parser');
 const { Op } = require('sequelize');
 const { userRelation, profiles } = require('../models');
-const { nullCheck } = require('./validations/nullcheck');
+const jwtcheck = require('../middleware/jwtcheck');
 
 app.use(bodyParser.json());
 
@@ -93,10 +93,11 @@ app.get("/:profileUUID/followings", async (req, res) => {
 });
 
 /* 
-* /:followerProfileUUID/follows/:beingFollowedProfileUUID - POST - user follows other user
+* /:profileUUID/follows/:beingFollowedProfileUUID - POST - user follows other user
+* @check check jwt signature, match profile uuid from payload
 */
-app.post("/:followerProfileUUID/follows/:beingFollowedProfileUUID", async (req, res) => {
-    const followerProfileUUID = req.params.followerProfileUUID;
+app.post("/:profileUUID/follows/:beingFollowedProfileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
+    const followerProfileUUID = req.params.profileUUID;
     const beingFollowedProfileUUID = req.params.beingFollowedProfileUUID;
     let error = false;
 
@@ -178,10 +179,11 @@ app.post("/:followerProfileUUID/follows/:beingFollowedProfileUUID", async (req, 
 });
 
 /* 
-* /:followerProfileUUID/follows/:beingFollowedProfileUUID - DELETE - user unfollows other user
+* /:profileUUID/follows/:beingFollowedProfileUUID - DELETE - user unfollows other user
+* @check check jwt signature, match profile uuid from payload
 */
-app.delete("/:followerProfileId/unfollows/:beingFollowedProfileUUID", async (req, res) => {
-    const followerProfileUUID = req.params.followerProfileUUID;
+app.delete("/:profileUUID/unfollows/:beingFollowedProfileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
+    const followerProfileUUID = req.ppllarams.followerProfileUUID;
     const beingFollowedProfileUUID = req.params.beingFollowedProfileUUID;
     let error = false;
 
