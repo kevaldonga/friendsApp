@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 * @check check jwt signature, match uid from payload
 */
 app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['postId', 'comment', 'profileId'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
+    value = nullcheck(req.body, { nonNullableFields: ['postId', 'comment', 'profileId'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
 
@@ -202,7 +202,7 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
 * @check check jwt signature
 */
 app.put("/:commentUUID", jwtcheck, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['comment'], mustBeNullFields: [...defaultNullFields, 'profileId', 'postId', 'likesCount'] });
+    value = nullcheck(req.body, { nonNullableFields: ['comment'], mustBeNullFields: [...defaultNullFields, 'profileId', 'postId', 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
 

@@ -24,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     *  1 - delievered
     *  2 - seen
     */
-    sentFromProfileId: { type: DataTypes.INTEGER, allowNull: false }
+    sentFromProfileId: { type: DataTypes.INTEGER, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'chats',

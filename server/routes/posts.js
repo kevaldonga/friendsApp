@@ -96,7 +96,7 @@ app.get("/:profileUUID/posts", jwtcheck, authorizeProfileUUID, async (req, res) 
 * @check check jwt signature, match uid from payload
 */
 app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['profileId', 'title', 'media',], mustBeNullFields: [...defaultNullFields, 'likesCount', 'commentsCount'] });
+    value = nullcheck(req.body, { nonNullableFields: ['profileId', 'title', 'media',], mustBeNullFields: [...defaultNullFields, 'likesCount', 'commentsCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     await posts.create(req.body)
@@ -113,7 +113,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
 * @check check jwt signature
 */
 app.put("/:postUUID", jwtcheck, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['title', 'media'], mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount', 'commentsCount'] });
+    value = nullcheck(req.body, { nonNullableFields: ['title', 'media'], mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount', 'commentsCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
 

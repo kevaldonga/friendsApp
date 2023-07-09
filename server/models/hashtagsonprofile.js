@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   hashtagsOnProfile.init({
     profileId: { type: DataTypes.INTEGER, allowNull: false },
-    hashtagId: { type: DataTypes.INTEGER, allowNull: false }
+    hashtagId: { type: DataTypes.INTEGER, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'hashtagsOnProfile',

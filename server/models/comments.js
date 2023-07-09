@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     postId: { type: DataTypes.INTEGER, allowNull: false },
     comment: { type: DataTypes.STRING, allowNull: false, validate: { len: [10, 255] } },
     likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'comments',

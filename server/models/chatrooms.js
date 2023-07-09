@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     profileId1: { type: DataTypes.INTEGER, allowNull: false },
     profileId2: { type: DataTypes.INTEGER, allowNull: false },
     background: { type: DataTypes.STRING, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'chatrooms',

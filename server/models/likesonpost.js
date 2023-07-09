@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   likesOnPost.init({
     profileId: { type: DataTypes.INTEGER, allowNull: false },
     postId: { type: DataTypes.INTEGER, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'likesOnPost',

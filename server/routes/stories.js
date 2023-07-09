@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 * @check check jwt signature, match uid from payload
 */
 app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['profileId', 'media'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
+    value = nullcheck(req.body, { nonNullableFields: ['profileId', 'media'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     await stories.create(req.body)
@@ -113,7 +113,7 @@ app.get("/profile/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res
 * @check check jwt signature, match profile uuid from payload
 */
 app.put("/:storyUUID", jwtcheck, async (req, res) => {
-    value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount'] });
+    value = nullcheck(req.body, { mustBeNullFields: [...defaultNullFields, 'profileId', 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     const storyUUID = req.params.storyUUID;

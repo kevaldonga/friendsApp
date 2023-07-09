@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   likesOnStory.init({
     profileId: { type: DataTypes.INTEGER, allowNull: false },
     storyId: { type: DataTypes.INTEGER, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'likesOnStory',

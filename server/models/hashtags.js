@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     description: { type: DataTypes.STRING, allowNull: false, validate: { len: [30, 255] } },
     color: { type: DataTypes.STRING, allowNull: false },
     image: { type: DataTypes.STRING, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'hashtags',

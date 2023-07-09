@@ -34,7 +34,7 @@ app.get("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
 * @check check jwt signature
 */
 app.post("/", jwtcheck, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['username', 'userId'], mustBeNullFields: [...defaultNullFields, 'isActive', 'followers', 'followings'] });
+    value = nullcheck(req.body, { nonNullableFields: ['username', 'userId'], mustBeNullFields: [...defaultNullFields, 'isActive', 'followers', 'followings'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     await profiles.create(req.body)
@@ -51,7 +51,7 @@ app.post("/", jwtcheck, async (req, res) => {
 * @check check jwt signature, match profileuuid from payload
 */
 app.put("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
-    value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'userId', 'followers', 'followings', 'isActive'] });
+    value = nullcheck(req.body, { mustBeNullFields: [...defaultNullFields, 'userId', 'followers', 'followings', 'isActive'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     const profileUUID = req.params.profileUUID;

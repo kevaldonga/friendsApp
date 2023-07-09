@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   hashtagsOnPost.init({
     postId: { type: DataTypes.INTEGER, allowNull: false },
-    hashtagId: { type: DataTypes.INTEGER, allowNull: false }
+    hashtagId: { type: DataTypes.INTEGER, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'hashtagsOnPost',

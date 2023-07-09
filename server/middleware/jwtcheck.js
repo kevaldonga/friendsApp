@@ -2,8 +2,8 @@ const { jwt } = require('jsonwebtoken');
 const { JWTPRIVATEKEY } = require('./../config/globals');
 
 const jwtcheck = (req, res, next) => {
-    const token = req.headers.authorization.spilt(" ")[1];
     try {
+        const token = req.headers.authorization.split(" ")[1];
         let user = jwt.verify(token, JWTPRIVATEKEY);
         req.userinfo = user;
         next();

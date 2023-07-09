@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   likesOnComment.init({
     profileId: { type: DataTypes.INTEGER, allowNull: false },
     commentId: { type: DataTypes.INTEGER, allowNull: false },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'likesOnComment',

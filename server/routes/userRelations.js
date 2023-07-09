@@ -2,7 +2,7 @@ const app = require('express').Router();
 const bodyParser = require('body-parser');
 const { Op } = require('sequelize');
 const { userRelation, profiles } = require('../models');
-const jwtcheck = require('../middleware/jwtcheck');
+const { jwtcheck, authorizeProfileUUID } = require('../middleware/jwtcheck');
 
 app.use(bodyParser.json());
 

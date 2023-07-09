@@ -20,7 +20,9 @@ module.exports = (sequelize, DataTypes) => {
     note: { type: DataTypes.STRING, allowNull: true, validate: { len: [5, 20] } },
     userId: { type: DataTypes.INTEGER, allowNull: false },
     followers: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
-    followings: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 }
+    followings: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
+    profileImg: { type: DataTypes.STRING, allowNull: true },
+    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
     modelName: 'profiles',

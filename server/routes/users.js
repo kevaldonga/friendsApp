@@ -2,7 +2,7 @@ const app = require('express').Router();
 const bodyParser = require('body-parser');
 const { Op } = require('sequelize');
 const { users } = require('../models');
-const { nullCheck } = require('./validations/nullcheck');
+const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
 const { jwt } = require('jsonwebtoken');
 const { JWTPRIVATEKEY } = require('./../config/globals');
 const { jwtcheck, authorizeuid } = require('../middleware/jwtcheck');
@@ -71,10 +71,9 @@ app.get("/generatetoken/:uid", async (req, res) => {
 
 /* 
 * / - POST - create the user
-* @check check jwt signature
 */
-app.post("/", jwtcheck, async (req, res) => {
-    value = nullCheck(body, { nonNullableFields: ['uid', 'email'], mustBeNullFields: [...defaultNullFields] });
+app.post("/", async (req, res) => {
+    value = nullCheck(req.body, { nonNullableFields: ['uid', 'email'], mustBeNullFields: [...defaultNullFields] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     await users.create(req.body)
@@ -91,7 +90,7 @@ app.post("/", jwtcheck, async (req, res) => {
 * @check check jwt signature, match uid from payload
 */
 app.put("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullCheck(body, { mustBeNullFields: [...defaultNullFields, 'uid'] });
+    value = nullcheck(req.body, { mustBeNullFields: [...defaultNullFields, 'uid'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     const uid = req.params.uid;
