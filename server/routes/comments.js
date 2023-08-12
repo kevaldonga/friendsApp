@@ -1,9 +1,9 @@
 const app = require('express').Router();
-const { comments, likesOnComment, posts } = require('../models');
+const { comments, likesOnComment, posts, profiles } = require('../models');
 const bodyParser = require('body-parser');
 const Op = require('sequelize');
 const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
-const { jwtcheck, authorizeuid } = require('../middleware/jwtcheck');
+const { jwtcheck, authorizeuid, authorizeProfileUUID } = require('../middleware/jwtcheck');
 
 app.use(bodyParser.json());
 
@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 * @check check jwt signature, match uid from payload
 */
 app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullcheck(req.body, { nonNullableFields: ['postId', 'comment', 'profileId'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
+    value = nullCheck(req.body, { nonNullableFields: ['postId', 'comment', 'profileId'], mustBeNullFields: [...defaultNullFields, 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
 
@@ -42,9 +42,8 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
 
 /* 
 * /:commentUUID - GET - get a comment
-* @check check jwt signature
 */
-app.get("/:commentUUID", jwtcheck, async (req, res) => {
+app.get("/:commentUUID", async (req, res) => {
     const commentUUID = req.params.commentUUID;
     let error = false;
 
@@ -82,7 +81,6 @@ app.get("/:commentUUID", jwtcheck, async (req, res) => {
 
 /* 
 * /:postUUID/comments - GET - get all comments of post
-* @check check jwt signature
 */
 app.get("/:postUUID/comments", async (req, res) => {
     const postUUID = req.params.postUUID;
@@ -202,7 +200,7 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
 * @check check jwt signature
 */
 app.put("/:commentUUID", jwtcheck, async (req, res) => {
-    value = nullcheck(req.body, { nonNullableFields: ['comment'], mustBeNullFields: [...defaultNullFields, 'profileId', 'postId', 'likesCount'] });
+    value = nullCheck(req.body, { nonNullableFields: ['comment'], mustBeNullFields: [...defaultNullFields, 'profileId', 'postId', 'likesCount'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
 
@@ -242,9 +240,8 @@ app.put("/:commentUUID", jwtcheck, async (req, res) => {
 
 /* 
 * /:commentUUID/likes - GET - get likes on a comment
-* @check check jwt signature
 */
-app.get("/:commentUUID/likes", jwtcheck, async (req, res) => {
+app.get("/:commentUUID/likes", async (req, res) => {
     const commentUUID = req.params.commentUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -286,9 +283,9 @@ app.get("/:commentUUID/likes", jwtcheck, async (req, res) => {
 
 /* 
 * /:profileUUID/likes/:commentUUID - POST - like on a comment
-* @check check jwt signature
+* @check check jwt signature, match profile uuid from payload
 */
-app.post("/:profileUUID/likes/:commentUUID", jwtcheck, async (req, res) => {
+app.post("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const commentUUID = req.params.commentUUID;
     const profileUUID = req.params.profileUUID;
     let error = false;
@@ -353,9 +350,9 @@ app.post("/:profileUUID/likes/:commentUUID", jwtcheck, async (req, res) => {
 
 /* 
 * /:profileUUID/likes/:commentUUID - DELETE - unlike a comment
-* @check check jwt signature
+* @check check jwt signature, match profile uuid from payload
 */
-app.delete("/:profileUUID/likes/:commentUUID", jwtcheck, async (req, res) => {
+app.delete("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const commentUUID = req.params.commentUUID;
     const profileUUID = req.params.profileUUID;
     let error = false;

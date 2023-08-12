@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:friendsapp/constants/localhost.dart';
 import 'package:http/http.dart';
 
+import '../constants/jwtheader.dart';
+import 'common/exeptions/jwttokenexeption.dart';
+import 'common/functions/jwttoken.dart';
 import 'hashtag.dart';
 
 class Profile {
@@ -28,6 +31,8 @@ class Profile {
     this.isActive = false,
   });
 
+  static String? token;
+
   Profile.fromMap(Map<String, dynamic> data)
       : id = int.parse(data["id"]),
         userId = int.parse(data["userId"]),
@@ -40,10 +45,10 @@ class Profile {
         updatedAt = DateTime.parse(data["updatedAt"]);
 
   /*
-  * /:profileId - GET - get a profile
+  * /:profileUUID - GET - get a profile
   */
-  Future<Profile?> getProfile({required int profileId}) async {
-    Uri uri = Uri.https(localhost, "/profiles/$profileId");
+  Future<Profile?> getProfile({required String profileUUID}) async {
+    Uri uri = Uri.https(localhost, "/profiles/$profileUUID");
 
     Response response = await get(uri);
     final map = jsonDecode(response.body) as Map<String, dynamic>;
@@ -55,37 +60,55 @@ class Profile {
   * / - POST - create a profile
   */
   void createProfile({required Map<String, dynamic> body}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
     Uri uri = Uri.https(localhost, "/profiles/");
 
-    await post(uri, body: body);
+    await post(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:profileId - PUT - update a profile
+  * /:profileUUID - PUT - update a profile
   */
   void updateProfile({
-    required int profileId,
+    required String profileUUID,
     required Map<String, dynamic> body,
   }) async {
-    Uri uri = Uri.https(localhost, "profiles/$profileId");
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await put(uri, body: body);
+    Uri uri = Uri.https(localhost, "profiles/$profileUUID");
+
+    await put(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:profileId - DELETE - delete a profile
+  * /:profileUUID - DELETE - delete a profile
   */
-  void deleteProfile({required int profileId}) async {
-    Uri uri = Uri.https(localhost, "/profiles/$profileId");
+  void deleteProfile({required String profileUUID}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await delete(uri);
+    Uri uri = Uri.https(localhost, "/profiles/$profileUUID");
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /*
-  * /:profileId/hashtags - GET - get all hashtags of a profile
+  * /:profileUUID/hashtags - GET - get all hashtags of a profile
   */
-  Future<List<Hashtag?>> getHashtags({required int profileId}) async {
-    Uri uri = Uri.https(localhost, "profiles/$profileId/hashtags");
+  Future<List<Hashtag?>> getHashtags({required String profileUUID}) async {
+    Uri uri = Uri.https(localhost, "profiles/$profileUUID/hashtags");
 
     Response response = await get(uri);
 
@@ -99,20 +122,39 @@ class Profile {
   }
 
   /* 
-  * /:profileId/hashtags/:hashtagId - POST - add a hashtag in a post
+  * /:profileUUID/hashtags/:hashtagUUID - POST - add a hashtag in a post
   */
-  void addHashtag({required int profileId, required int hashtagId}) async {
-    Uri uri = Uri.https(localhost, "profiles/$profileId/hashtags/$hashtagId");
+  void addHashtag({
+    required String profileUUID,
+    required String hashtagUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await post(uri);
+    Uri uri =
+        Uri.https(localhost, "profiles/$profileUUID/hashtags/$hashtagUUID");
+
+    await post(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:profileId/hashtags/:hashtagId - DELETE - add a hashtag in a post
+  * /:profileUUID/hashtags/:hashtagUUID - DELETE - remove a hashtag in a post
   */
-  void removeHashtag({required int profileId, required int hashtagId}) async {
-    Uri uri = Uri.https(localhost, "posts/$profileId/hashtags/$hashtagId");
+  void removeHashtag({
+    required String profileUUID,
+    required String hashtagUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await delete(uri);
+    Uri uri = Uri.https(localhost, "posts/$profileUUID/hashtags/$hashtagUUID");
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 }

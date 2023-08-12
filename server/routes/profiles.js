@@ -9,9 +9,8 @@ app.use(bodyParser.json());
 
 /* 
 * /:profileUUID - GET - get a profile
-* @check check jwt signature, match profile uuid from payload
 */
-app.get("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
+app.get("/:profileUUID", async (req, res) => {
     const profileUUID = req.params.profileUUID;
 
     await profiles.findOne({
@@ -34,7 +33,7 @@ app.get("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
 * @check check jwt signature
 */
 app.post("/", jwtcheck, async (req, res) => {
-    value = nullcheck(req.body, { nonNullableFields: ['username', 'userId'], mustBeNullFields: [...defaultNullFields, 'isActive', 'followers', 'followings'] });
+    value = nullCheck(req.body, { nonNullableFields: ['username', 'userId'], mustBeNullFields: [...defaultNullFields, 'isActive', 'followers', 'followings'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     await profiles.create(req.body)
@@ -48,10 +47,10 @@ app.post("/", jwtcheck, async (req, res) => {
 
 /*
 * /:profileUUID - PUT - update a profile
-* @check check jwt signature, match profileuuid from payload
+* @check check jwt signature, match profile uuid from payload
 */
 app.put("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
-    value = nullcheck(req.body, { mustBeNullFields: [...defaultNullFields, 'userId', 'followers', 'followings', 'isActive'] });
+    value = nullCheck(req.body, { mustBeNullFields: [...defaultNullFields, 'userId', 'followers', 'followings', 'isActive'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     const profileUUID = req.params.profileUUID;
@@ -93,9 +92,8 @@ app.delete("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => 
 
 /* 
 * /:profileUUID/hashtags - GET - get all hashtags in a profile
-* @check check jwt signature, match profile uuid from payload
 */
-app.get("/:profileUUID/hashtags", jwtcheck, authorizeProfileUUID, async (req, res) => {
+app.get("/:profileUUID/hashtags", async (req, res) => {
     const profileUUID = req.params.profileUUID;
     const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
@@ -190,7 +188,7 @@ app.post("/:profileUUID/hashtags/:hashtagUUID", jwtcheck, authorizeProfileUUID, 
 
 /* 
 * /:profileUUID/hashtags/:hasgtagUUID - GET - delete a hashtag on a profile
-* @check check jwt signature, match profileuuid from payload
+* @check check jwt signature, match profile uuid from payload
 */
 app.delete("/:profileUUID/hashtags/hashtagUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const profileUUID = req.params.profileUUID;

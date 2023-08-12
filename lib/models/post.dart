@@ -4,11 +4,14 @@ import 'package:friendsapp/models/hashtag.dart';
 import 'package:friendsapp/models/profile.dart';
 import 'package:http/http.dart';
 
+import '../constants/jwtheader.dart';
 import '../constants/localhost.dart';
+import 'common/exeptions/jwttokenexeption.dart';
+import 'common/functions/jwttoken.dart';
 
 class Post {
   final int id;
-  final int profileId;
+  final int profileUUID;
   String title;
   String media;
   int likesCount;
@@ -18,7 +21,7 @@ class Post {
 
   Post({
     required this.id,
-    required this.profileId,
+    required this.profileUUID,
     required this.title,
     required this.media,
     required this.createdAt,
@@ -27,9 +30,11 @@ class Post {
     this.commentsCount = 0,
   });
 
+  static String? token;
+
   Post.fromMap(Map<String, dynamic> data)
       : id = int.parse(data["id"]),
-        profileId = int.parse(data["profileId"]),
+        profileUUID = int.parse(data["profileUUID"]),
         title = data["title"],
         media = data["media"],
         likesCount = int.parse(data["likesCount"]),
@@ -38,10 +43,10 @@ class Post {
         updatedAt = DateTime.parse(data["updatedAt"]!);
 
   /* 
-  * /:postId - GET - get a post
+  * /:postUUID - GET - get a post
   */
-  Future<Post?> getPost({required int postId}) async {
-    Uri uri = Uri.https(localhost, "posts/$postId");
+  Future<Post?> getPost({required String postUUID}) async {
+    Uri uri = Uri.https(localhost, "posts/$postUUID");
 
     Response response = await get(uri);
     final map = jsonDecode(response.body) as Map<String, dynamic>;
@@ -53,37 +58,55 @@ class Post {
   * / - POST - create a post
   */
   void createPost({required Map<String, dynamic> body}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
     Uri uri = Uri.https(localhost, "posts/");
 
-    await post(uri, body: body);
+    await post(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:postId - PUT - update a post
+  * /:postUUID - PUT - update a post
   */
   void updatePost({
-    required int postId,
+    required String postUUID,
     required Map<String, dynamic> body,
   }) async {
-    Uri uri = Uri.https(localhost, "posts/$postId");
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await put(uri, body: body);
+    Uri uri = Uri.https(localhost, "posts/$postUUID");
+
+    await put(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:postId - DELETE - delete a post
+  * /:postUUID - DELETE - delete a post
   */
-  void deletePost({required int postId}) async {
-    Uri uri = Uri.https(localhost, "posts/$postId");
+  void deletePost({required String postUUID}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await delete(uri);
+    Uri uri = Uri.https(localhost, "posts/$postUUID");
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /*
-  * /:profileId/posts - GET - get all posts of a profile
+  * /:profileUUID/posts - GET - get all posts of a profile
   */
-  Future<List<Post?>> getPostsOfProfile({required int profileId}) async {
-    Uri uri = Uri.https(localhost, "posts/$profileId/posts");
+  Future<List<Post?>> getPostsOfProfile({required String profileUUID}) async {
+    Uri uri = Uri.https(localhost, "posts/$profileUUID/posts");
 
     Response response = await get(uri);
 
@@ -99,8 +122,8 @@ class Post {
   /*
   * /:postid/hashtags - GET - get all hashtags of a post
   */
-  Future<List<Hashtag?>> getHashtags({required int postId}) async {
-    Uri uri = Uri.https(localhost, "posts/$postId/hashtags");
+  Future<List<Hashtag?>> getHashtags({required String postUUID}) async {
+    Uri uri = Uri.https(localhost, "posts/$postUUID/hashtags");
 
     Response response = await get(uri);
 
@@ -114,28 +137,46 @@ class Post {
   }
 
   /* 
-  * /:postId/hashtags/:hashtagId - POST - add a hashtag in a post
+  * /:postUUID/hashtags/:hashtagUUID - POST - add a hashtag in a post
   */
-  void addHashtag({required int postId, required int hashtagId}) async {
-    Uri uri = Uri.https(localhost, "posts/$postId/hashtags/$hashtagId");
+  void addHashtag({
+    required String postUUID,
+    required String hashtagUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await post(uri);
+    Uri uri = Uri.https(localhost, "posts/$postUUID/hashtags/$hashtagUUID");
+
+    await post(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:postId/hashtags/:hashtagId - DELETE - add a hashtag in a post
+  * /:postUUID/hashtags/:hashtagUUID - DELETE - remove a hashtag in a post
   */
-  void removeHashtag({required int postId, required int hashtagId}) async {
-    Uri uri = Uri.https(localhost, "posts/$postId/hashtags/$hashtagId");
+  void removeHashtag({
+    required String postUUID,
+    required String hashtagUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await delete(uri);
+    Uri uri = Uri.https(localhost, "posts/$postUUID/hashtags/$hashtagUUID");
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /*
-  * /:postId/likes - GET - get likes of a post
+  * /:postUUID/likes - GET - get likes of a post
   */
-  static Future<List<Profile?>> viewLikes({required int postId}) async {
-    final Uri uri = Uri.https(localhost, "/posts/$postId/likes");
+  static Future<List<Profile?>> viewLikes({required String postUUID}) async {
+    final Uri uri = Uri.https(localhost, "/posts/$postUUID/likes");
 
     Response response = await get(uri);
     final list = jsonDecode(response.body) as List<Map<String, dynamic>>;
@@ -148,21 +189,38 @@ class Post {
   }
 
   /* 
-  * /:postId/likes/:profileId - POST - like a story
+  * /:postUUID/likes/:profileUUID - POST - like a story
   */
-  static void likePost({required int postId, required int profileId}) async {
-    final Uri uri = Uri.https(localhost, "/stories/$postId/likes/$profileId");
-    await post(uri);
+  static void likePost({
+    required String postUUID,
+    required String profileUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
+    final Uri uri =
+        Uri.https(localhost, "/stories/$postUUID/likes/$profileUUID");
+    await post(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /*
-  * /:storyId/likes/:profileId - DELETE - unlike a story
+  * /:storyId/likes/:profileUUID - DELETE - unlike a story
   */
   static void unlikePost({
-    required int postId,
-    required int profileId,
+    required String postUUID,
+    required String profileUUID,
   }) async {
-    final Uri uri = Uri.https(localhost, "/stories/$postId/likes/$profileId");
-    await delete(uri);
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
+    final Uri uri =
+        Uri.https(localhost, "/stories/$postUUID/likes/$profileUUID");
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 }

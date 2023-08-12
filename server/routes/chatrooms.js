@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 * @check check jwt signature, match uid from payload
 */
 app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullcheck(req.body, { nonNullableFields: ['profileId1', 'profileId2'], mustBeNullFields: [...defaultNullFields, 'profileId1', 'profileId2'] });
+    value = nullCheck(req.body, { nonNullableFields: ['profileId1', 'profileId2'], mustBeNullFields: [...defaultNullFields, 'profileId1', 'profileId2'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     await chatrooms.create(req.body)
@@ -51,7 +51,7 @@ app.get("/:chatroomUUID", jwtcheck, async (req, res) => {
 * @check check jwt signature
 */
 app.put("/:chatroomUUID", jwtcheck, async (req, res) => {
-    value = nullcheck(req.body, { nonNullableFields: ['background'], mustBeNullFields: [...defaultNullFields, 'profileId1', 'profileId2'] });
+    value = nullCheck(req.body, { nonNullableFields: ['background'], mustBeNullFields: [...defaultNullFields, 'profileId1', 'profileId2'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     const chatroomUUID = req.params.chatroomUUID;
@@ -142,7 +142,7 @@ app.get("/:chatroomUUID/chats", jwtcheck, async (req, res) => {
 * @check check jwt signature
 */
 app.post("/:chatroomUUID/chats/", jwtcheck, async (req, res) => {
-    value = nullcheck(req.body, { nonNullableFields: ['profileId'] });
+    value = nullCheck(req.body, { nonNullableFields: ['profileId'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
     let error = false;
 

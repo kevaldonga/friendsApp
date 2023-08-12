@@ -90,7 +90,7 @@ app.post("/", async (req, res) => {
 * @check check jwt signature, match uid from payload
 */
 app.put("/:uid", jwtcheck, authorizeuid, async (req, res) => {
-    value = nullcheck(req.body, { mustBeNullFields: [...defaultNullFields, 'uid'] });
+    value = nullCheck(req.body, { mustBeNullFields: [...defaultNullFields, 'uid'] });
     if (typeof (value) == 'string') return res.status(409).send(value);
 
     const uid = req.params.uid;

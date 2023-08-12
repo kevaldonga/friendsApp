@@ -1,7 +1,11 @@
 import 'dart:convert';
 
 import 'package:friendsapp/constants/localhost.dart';
+import 'package:friendsapp/models/common/exeptions/jwttokenexeption.dart';
+import 'package:friendsapp/models/common/functions/jwttoken.dart';
 import 'package:http/http.dart';
+
+import '../constants/jwtheader.dart';
 
 class MyUser {
   final int id;
@@ -22,6 +26,8 @@ class MyUser {
     required this.updatedAt,
   });
 
+  static String? token;
+
   MyUser.fromMap(Map<String, dynamic> data)
       : id = int.parse(data["id"]),
         uid = data["uid"],
@@ -36,7 +42,7 @@ class MyUser {
   */
   static Future<MyUser?> getUser({required String uid}) async {
     final Uri uri = Uri.https(localhost, "/users/$uid");
-    Response response = await get(uri, headers: {"uid": uid});
+    Response response = await get(uri);
     final map = jsonDecode(response.body) as Map<String, dynamic>;
     return MyUser.fromMap(map);
   }
@@ -46,25 +52,40 @@ class MyUser {
   */
   static void createUser({required Map<String, dynamic> body}) async {
     final Uri uri = Uri.https(localhost, "/users/");
-    await post(uri, body: body);
+    await post(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:uid - PUT - update a auser
+  * /:uid - PUT - update a user
   */
   static void updateUser({
     required Map<String, dynamic> body,
     required String uid,
   }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
     final Uri uri = Uri.https(localhost, "/users/$uid");
-    await put(uri, body: body);
+    await put(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
   * /:uid - DELETE - delete a user
   */
   static void deleteUser({required String uid}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
     final Uri uri = Uri.https(localhost, "/users/$uid");
-    await delete(uri);
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 }

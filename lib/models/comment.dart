@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:friendsapp/constants/jwtheader.dart';
+import 'package:friendsapp/models/common/functions/jwttoken.dart';
 import 'package:friendsapp/models/profile.dart';
 import 'package:http/http.dart';
 
 import '../constants/localhost.dart';
+import 'common/exeptions/jwttokenexeption.dart';
 
 class Comment {
   final int id;
@@ -24,6 +27,8 @@ class Comment {
     required this.updatedAt,
   });
 
+  static String? token;
+
   Comment.fromMap(Map<String, dynamic> data)
       : id = int.parse(data["id"]),
         profileId = int.parse(data["profileId"]),
@@ -37,16 +42,22 @@ class Comment {
   * / - POST - create a comment
   */
   void createComment({required Map<String, dynamic> body}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
     Uri uri = Uri.https(localhost, "comments/");
 
-    await post(uri, body: body);
+    await post(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:commentId - GET - get a comment
+  * /:commentUUID - GET - get a comment
   */
-  Future<Comment?> getComment({required int commentId}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentId");
+  Future<Comment?> getComment({required String commentUUID}) async {
+    Uri uri = Uri.https(localhost, "comments/$commentUUID");
 
     Response response = await get(uri);
     final map = jsonDecode(response.body) as Map<String, dynamic>;
@@ -55,29 +66,43 @@ class Comment {
   }
 
   /* 
-  * /:commentId - DELETE - delete a comment
+  * /:commentUUID - DELETE - delete a comment
   */
-  void deleteComment({required int commentId}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentId");
+  void deleteComment({required String commentUUID}) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await delete(uri);
+    Uri uri = Uri.https(localhost, "comments/$commentUUID");
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:commentId - PUT - update a comment
+  * /:commentUUID - PUT - update a comment
   */
-  void updateComment(
-      {required int commentId, required Map<String, dynamic> body}) async {
-    Uri uri = Uri.https(localhost, "/comments/$commentId");
+  void updateComment({
+    required String commentUUID,
+    required Map<String, dynamic> body,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await put(uri, body: body);
+    Uri uri = Uri.https(localhost, "/comments/$commentUUID");
+
+    await put(uri, body: body, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:postId/comments - GET - get all comments of post
+  * /:postUUID/comments - GET - get all comments of post
   */
-  Future<List<Comment?>> getComments({required int postId}) async {
-    Uri uri = Uri.https(localhost, "comments/$postId/comments");
+  Future<List<Comment?>> getComments({required String postUUID}) async {
+    Uri uri = Uri.https(localhost, "comments/$postUUID/comments");
 
     Response response = await get(uri);
     final list = jsonDecode(response.body) as List<Map<String, dynamic>>;
@@ -90,10 +115,10 @@ class Comment {
   }
 
   /* 
-  * /:commentId/likes - GET - get likes on comment
+  * /:commentUUID/likes - GET - get likes on comment
   */
-  Future<List<Profile?>> getLikes({required int commentId}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentId/likes");
+  Future<List<Profile?>> getLikes({required String commentUUID}) async {
+    Uri uri = Uri.https(localhost, "comments/$commentUUID/likes");
 
     Response response = await get(uri);
     final list = jsonDecode(response.body) as List<Map<String, dynamic>>;
@@ -106,20 +131,38 @@ class Comment {
   }
 
   /* 
-  * /:commentId/likes/:profileId - POST - like on a comment
+  * /:commentUUID/likes/:profileUUID - POST - like on a comment
   */
-  void likeComment({required int profileId, required int commentId}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentId/likes/$profileId");
+  void likeComment({
+    required String profileUUID,
+    required String commentUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await post(uri);
+    Uri uri = Uri.https(localhost, "comments/$commentUUID/likes/$profileUUID");
+
+    await post(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 
   /* 
-  * /:commentId/likes/:profileId - DELETE - like on a comment
+  * /:commentUUID/likes/:profileUUID - DELETE - unlike on a comment
   */
-  void unlikeComment({required int profileId, required int commentId}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentId/likes/$profileId");
+  void unlikeComment({
+    required String profileUUID,
+    required String commentUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    await delete(uri);
+    Uri uri = Uri.https(localhost, "comments/$commentUUID/likes/$profileUUID");
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
   }
 }
