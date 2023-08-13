@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.hasOne(models.profiles, { as: 'profiles', sourceKey: 'id', foreignKey: 'userId' })
     }
   }
   users.init({
@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     email: { type: DataTypes.STRING, allowNull: false, validate: { len: [10, 100] } },
     phoneno: { type: DataTypes.STRING, allowNull: true, validate: { len: [10, 15] } },
     countryCode: { type: DataTypes.STRING, allowNull: true, validate: { len: [3, 7] } },
+    role: { type: DataTypes.ENUM('user', 'admin', 'moderator'), allowNull: false, defaultValue: 'user' },
     uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,

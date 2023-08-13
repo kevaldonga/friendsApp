@@ -12,6 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.profiles);
       this.belongsToMany(models.hashtags, { through: "hashtagsonpost", foreignKey: "hashtagsId" });
+
+      this.hasMany(models.comments);
     }
   }
   posts.init({

@@ -74,7 +74,7 @@ class Hashtag {
     required String userUUID,
   }) async {
     token ??= await fetchToken();
-    if (token == null) throw JwtTokenExeption("hashtag is not logged in!!");
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
     final Uri uri = Uri.https(localhost, "/hashtags/$hashtagUUID");
     await put(uri, body: body, headers: {
@@ -91,12 +91,70 @@ class Hashtag {
     required String userUUID,
   }) async {
     token ??= await fetchToken();
-    if (token == null) throw JwtTokenExeption("hashtag is not logged in!!");
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
     final Uri uri = Uri.https(localhost, "/hashtags/$hashtagUUID");
     await delete(uri, headers: {
       ...header,
       "Authorization": "Bearer $token",
     });
+  }
+
+  /* 
+  * /:hashtagUUID/moderators/:moderatorUUID - POST - add a hashtag moderator
+  */
+  static void addModerator({
+    required String hashtagUUID,
+    required String moderatorUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
+    final Uri uri = Uri.https(
+      localhost,
+      "/hashtags/$hashtagUUID/moderators/$moderatorUUID",
+    );
+
+    await post(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
+  }
+
+  /* 
+  * /:hashtagUUID/moderators/:moderatorUUID - POST - remove a hashtag moderator
+  */
+  static void removeModerator({
+    required String hashtagUUID,
+    required String moderatorUUID,
+  }) async {
+    token ??= await fetchToken();
+    if (token == null) throw JwtTokenExeption("user is not logged in!!");
+
+    final Uri uri = Uri.https(
+      localhost,
+      "/hashtags/$hashtagUUID/moderators/$moderatorUUID",
+    );
+
+    await delete(uri, headers: {
+      ...header,
+      "Authorization": "Bearer $token",
+    });
+  }
+
+  /* 
+  * /:hashtagUUID/moderators - GET - get all moderators of hashtag
+  */
+  static void getAllModerators({
+    required String hashtagUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    final Uri uri = Uri.https(
+      localhost,
+      "/hashtags/$hashtagUUID/moderators?limit=$limit&offset=$offset",
+    );
+
+    await get(uri);
   }
 }

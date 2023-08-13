@@ -81,7 +81,7 @@ class Profile {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "profiles/$profileUUID");
+    Uri uri = Uri.https(localhost, "/profiles/$profileUUID");
 
     await put(uri, body: body, headers: {
       ...header,
@@ -107,8 +107,15 @@ class Profile {
   /*
   * /:profileUUID/hashtags - GET - get all hashtags of a profile
   */
-  Future<List<Hashtag?>> getHashtags({required String profileUUID}) async {
-    Uri uri = Uri.https(localhost, "profiles/$profileUUID/hashtags");
+  Future<List<Hashtag?>> getHashtags({
+    required String profileUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    Uri uri = Uri.https(
+      localhost,
+      "/profiles/$profileUUID/hashtags?limit=$limit&offset=$offset",
+    );
 
     Response response = await get(uri);
 
@@ -122,7 +129,7 @@ class Profile {
   }
 
   /* 
-  * /:profileUUID/hashtags/:hashtagUUID - POST - add a hashtag in a post
+  * /:profileUUID/hashtags/:hashtagUUID - POST - add a hashtag in a profile
   */
   void addHashtag({
     required String profileUUID,
@@ -131,8 +138,10 @@ class Profile {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri =
-        Uri.https(localhost, "profiles/$profileUUID/hashtags/$hashtagUUID");
+    Uri uri = Uri.https(
+      localhost,
+      "/profiles/$profileUUID/hashtags/$hashtagUUID",
+    );
 
     await post(uri, headers: {
       ...header,
@@ -141,7 +150,7 @@ class Profile {
   }
 
   /* 
-  * /:profileUUID/hashtags/:hashtagUUID - DELETE - remove a hashtag in a post
+  * /:profileUUID/hashtags/:hashtagUUID - DELETE - remove a hashtag from a profile
   */
   void removeHashtag({
     required String profileUUID,
@@ -150,7 +159,10 @@ class Profile {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "posts/$profileUUID/hashtags/$hashtagUUID");
+    Uri uri = Uri.https(
+      localhost,
+      "/profiles/$profileUUID/hashtags/$hashtagUUID",
+    );
 
     await delete(uri, headers: {
       ...header,

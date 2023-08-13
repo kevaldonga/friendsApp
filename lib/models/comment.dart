@@ -45,7 +45,7 @@ class Comment {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "comments/");
+    Uri uri = Uri.https(localhost, "/comments/");
 
     await post(uri, body: body, headers: {
       ...header,
@@ -57,7 +57,7 @@ class Comment {
   * /:commentUUID - GET - get a comment
   */
   Future<Comment?> getComment({required String commentUUID}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentUUID");
+    Uri uri = Uri.https(localhost, "/comments/$commentUUID");
 
     Response response = await get(uri);
     final map = jsonDecode(response.body) as Map<String, dynamic>;
@@ -72,7 +72,7 @@ class Comment {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "comments/$commentUUID");
+    Uri uri = Uri.https(localhost, "/comments/$commentUUID");
 
     await delete(uri, headers: {
       ...header,
@@ -101,8 +101,15 @@ class Comment {
   /* 
   * /:postUUID/comments - GET - get all comments of post
   */
-  Future<List<Comment?>> getComments({required String postUUID}) async {
-    Uri uri = Uri.https(localhost, "comments/$postUUID/comments");
+  Future<List<Comment?>> getComments({
+    required String postUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    Uri uri = Uri.https(
+      localhost,
+      "/comments/$postUUID/comments?limit=$limit&offset=$offset",
+    );
 
     Response response = await get(uri);
     final list = jsonDecode(response.body) as List<Map<String, dynamic>>;
@@ -117,8 +124,15 @@ class Comment {
   /* 
   * /:commentUUID/likes - GET - get likes on comment
   */
-  Future<List<Profile?>> getLikes({required String commentUUID}) async {
-    Uri uri = Uri.https(localhost, "comments/$commentUUID/likes");
+  Future<List<Profile?>> getLikes({
+    required String commentUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    Uri uri = Uri.https(
+      localhost,
+      "/comments/$commentUUID/likes?limit=$limit&offset=$offset",
+    );
 
     Response response = await get(uri);
     final list = jsonDecode(response.body) as List<Map<String, dynamic>>;
@@ -140,7 +154,7 @@ class Comment {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "comments/$commentUUID/likes/$profileUUID");
+    Uri uri = Uri.https(localhost, "/comments/$commentUUID/likes/$profileUUID");
 
     await post(uri, headers: {
       ...header,
@@ -158,7 +172,7 @@ class Comment {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "comments/$commentUUID/likes/$profileUUID");
+    Uri uri = Uri.https(localhost, "/comments/$commentUUID/likes/$profileUUID");
 
     await delete(uri, headers: {
       ...header,

@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsToMany(models.profiles, { through: "hashtagsonprofile", foreignKey: "profileId" });
       this.belongsToMany(models.stories, { through: "hashtagsonstory", foreignKey: "storyId" });
       this.belongsToMany(models.posts, { through: "hashtagsOnPost", foreignKey: "postId" });
+
+      this.hasMany(models.hashtagModerators);
     }
   }
   hashtags.init({

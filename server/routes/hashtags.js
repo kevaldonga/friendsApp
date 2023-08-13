@@ -1,9 +1,10 @@
 const app = require('express')();
 const Op = require('sequelize');
 const bodyParser = require('body-parser');
-const { hashtags } = require('../models');
+const { hashtags, hashtagModerators, users } = require('../models');
 const { nullCheck, defaultNullFields } = require('./validations/nullcheck');
 const { jwtcheck, authorizeuserUUID } = require('../middleware/jwtcheck');
+const { adminCheck, moderatorCheck } = require('../middleware/rolecheck');
 
 app.use(bodyParser.json());
 
@@ -11,7 +12,7 @@ app.use(bodyParser.json());
 * /:userUUID - POST - create a hashtag
 * @check check jwt signature, match userUUID from payload
 */
-app.post("/:userUUID", jwtcheck, authorizeuserUUID, async (req, res) => {
+app.post("/:userUUID", jwtcheck, authorizeuserUUID, adminCheck, async (req, res) => {
     value = nullCheck(req.body, { nonNullableFields: ['tag', 'description', 'color', 'image'], mustBeNullFields: defaultNullFields });
     if (typeof (value) != 'string') return res.status(409).send(value);
 
@@ -28,7 +29,7 @@ app.post("/:userUUID", jwtcheck, authorizeuserUUID, async (req, res) => {
 * /:userUUID/tag/:tagUUID - PUT - update a hashtag
 * @check check jwt signature, match userUUID from payload
 */
-app.put("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, async (req, res) => {
+app.put("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, moderatorCheck, async (req, res) => {
     value = nullCheck(req.body, { mustBeNullFields: [...defaultNullFields, 'tag'] });
     if (typeof (value) != 'string') return res.status(409).send(value);
 
@@ -53,7 +54,7 @@ app.put("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, async (req, res)
 * /:userUUID/tag/:tagUUID - DELETE - delete a hashtag
 * @check check jwt signature, match userUUID from payload
 */
-app.delete("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, async (req, res) => {
+app.delete("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, moderatorCheck, async (req, res) => {
     const tagUUID = req.params.tagUUID;
 
     await hashtags.delete({
@@ -74,7 +75,7 @@ app.delete("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, async (req, r
 /* 
 * /:tagUUID - GET - get a hashtag
 */
-app.post("/:tagUUID", async (req, res) => {
+app.get("/:tagUUID", async (req, res) => {
     const tagUUID = req.params.tagUUID;
 
     await hashtags.get({
@@ -90,4 +91,169 @@ app.post("/:tagUUID", async (req, res) => {
         .catch((err) => {
             res.status(403).send(err);
         });
+});
+
+/* 
+* /:hashtagUUID/moderators/:userUUID - POST - add moderator to a hashtag
+* @check check jwt signature
+*/
+app.post("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (req, res) => {
+    const userUUID = req.params.userUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+
+    let error = false;
+
+    result = await users.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: userUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(409).send(err.message);
+        });
+
+    if (error) return;
+
+    const userId = result.id;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(409).send(err.message);
+        });
+
+    if (error) return;
+
+    const hashtagId = result.id;
+
+    await hashtagModerators.create({
+        "userId": userId,
+        "hashtagId": hashtagId,
+    })
+        .then((result) => {
+            res.send("moderator added successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
+});
+
+/* 
+* /:hashtagUUID/moderators/:userUUID - DELETE - remove moderator from a hashtag
+* @check check jwt signature
+*/
+app.delete("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (req, res) => {
+    const userUUID = req.params.userUUID;
+    const hashtagUUID = req.params.hashtagUUID;
+
+    let error = false;
+
+    result = await users.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: userUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(409).send(err.message);
+        });
+
+    if (error) return;
+
+    const userId = result.id;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(409).send(err.message);
+        });
+
+    if (error) return;
+
+    const hashtagId = result.id;
+
+    await hashtagModerators.destroy({
+        where: {
+            "userId": {
+                [Op.eq]: userId,
+            },
+            "hashtagId": {
+                [Op.eq]: hashtagId
+            },
+        },
+    })
+        .then((result) => {
+            res.send("moderator added successfully!!");
+        })
+        .catch((err) => {
+            res.status(403).send(err.message);
+        });
+});
+
+/* 
+ /:hashtagUUID/moderators - GET - get all hashtag moderators
+*/
+app.get("/:hashtagUUID/moderators", async (req, res) => {
+    const offset = req.query.page === undefined ? 0 : parseInt(req.query.page);
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit);
+
+    const hashtagUUID = req.params.hashtagUUID;
+    let error = false;
+
+    result = await hashtags.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: hashtagUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+
+            res.status(409).send(err.message);
+        });
+
+    if (error) return;
+
+    const hashtagId = result.id;
+
+    await hashtagModerators.findAll({
+        where: {
+            "hashtagId": {
+                [Op.eq]: hashtagId,
+            },
+        },
+        include: "users",
+        limit: limit,
+        offset: offset,
+    })
+        .then((result) => {
+            res.send(result.users);
+        })
+        .catch((err) => {
+            res.status(409).send(err.message);
+        });
+
 });

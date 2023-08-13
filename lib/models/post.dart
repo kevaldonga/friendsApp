@@ -46,7 +46,7 @@ class Post {
   * /:postUUID - GET - get a post
   */
   Future<Post?> getPost({required String postUUID}) async {
-    Uri uri = Uri.https(localhost, "posts/$postUUID");
+    Uri uri = Uri.https(localhost, "/posts/$postUUID");
 
     Response response = await get(uri);
     final map = jsonDecode(response.body) as Map<String, dynamic>;
@@ -61,7 +61,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "posts/");
+    Uri uri = Uri.https(localhost, "/posts/");
 
     await post(uri, body: body, headers: {
       ...header,
@@ -79,7 +79,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "posts/$postUUID");
+    Uri uri = Uri.https(localhost, "/posts/$postUUID");
 
     await put(uri, body: body, headers: {
       ...header,
@@ -94,7 +94,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "posts/$postUUID");
+    Uri uri = Uri.https(localhost, "/posts/$postUUID");
 
     await delete(uri, headers: {
       ...header,
@@ -105,8 +105,15 @@ class Post {
   /*
   * /:profileUUID/posts - GET - get all posts of a profile
   */
-  Future<List<Post?>> getPostsOfProfile({required String profileUUID}) async {
-    Uri uri = Uri.https(localhost, "posts/$profileUUID/posts");
+  Future<List<Post?>> getPostsOfProfile({
+    required String profileUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    Uri uri = Uri.https(
+      localhost,
+      "/posts/$profileUUID/posts?limit=$limit&offset=$offset",
+    );
 
     Response response = await get(uri);
 
@@ -120,10 +127,17 @@ class Post {
   }
 
   /*
-  * /:postid/hashtags - GET - get all hashtags of a post
+  * /:postUUID/hashtags - GET - get all hashtags of a post
   */
-  Future<List<Hashtag?>> getHashtags({required String postUUID}) async {
-    Uri uri = Uri.https(localhost, "posts/$postUUID/hashtags");
+  Future<List<Hashtag?>> getHashtags({
+    required String postUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    Uri uri = Uri.https(
+      localhost,
+      "/posts/$postUUID/hashtags?limit=$limit&offset=$offset",
+    );
 
     Response response = await get(uri);
 
@@ -146,7 +160,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "posts/$postUUID/hashtags/$hashtagUUID");
+    Uri uri = Uri.https(localhost, "/posts/$postUUID/hashtags/$hashtagUUID");
 
     await post(uri, headers: {
       ...header,
@@ -164,7 +178,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    Uri uri = Uri.https(localhost, "posts/$postUUID/hashtags/$hashtagUUID");
+    Uri uri = Uri.https(localhost, "/posts/$postUUID/hashtags/$hashtagUUID");
 
     await delete(uri, headers: {
       ...header,
@@ -175,8 +189,15 @@ class Post {
   /*
   * /:postUUID/likes - GET - get likes of a post
   */
-  static Future<List<Profile?>> viewLikes({required String postUUID}) async {
-    final Uri uri = Uri.https(localhost, "/posts/$postUUID/likes");
+  static Future<List<Profile?>> viewLikes({
+    required String postUUID,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    final Uri uri = Uri.https(
+      localhost,
+      "/posts/$postUUID/likes?limit=$limit&offset=$offset",
+    );
 
     Response response = await get(uri);
     final list = jsonDecode(response.body) as List<Map<String, dynamic>>;
@@ -189,7 +210,7 @@ class Post {
   }
 
   /* 
-  * /:postUUID/likes/:profileUUID - POST - like a story
+  * /:postUUID/likes/:profileUUID - POST - like a post
   */
   static void likePost({
     required String postUUID,
@@ -198,8 +219,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    final Uri uri =
-        Uri.https(localhost, "/stories/$postUUID/likes/$profileUUID");
+    final Uri uri = Uri.https(localhost, "/posts/$postUUID/likes/$profileUUID");
     await post(uri, headers: {
       ...header,
       "Authorization": "Bearer $token",
@@ -207,7 +227,7 @@ class Post {
   }
 
   /*
-  * /:storyId/likes/:profileUUID - DELETE - unlike a story
+  * /:storyId/likes/:profileUUID - DELETE - unlike a post
   */
   static void unlikePost({
     required String postUUID,
@@ -216,8 +236,7 @@ class Post {
     token ??= await fetchToken();
     if (token == null) throw JwtTokenExeption("user is not logged in!!");
 
-    final Uri uri =
-        Uri.https(localhost, "/stories/$postUUID/likes/$profileUUID");
+    final Uri uri = Uri.https(localhost, "/posts/$postUUID/likes/$profileUUID");
     await delete(uri, headers: {
       ...header,
       "Authorization": "Bearer $token",
