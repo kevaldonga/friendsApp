@@ -18,7 +18,7 @@ app.post("/:userUUID", jwtcheck, authorizeuserUUID, adminCheck, async (req, res)
 
     await hashtags.create(req.body)
         .then((result) => {
-            res.send("hashtag created successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err);
@@ -43,7 +43,10 @@ app.put("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, moderatorCheck, 
         },
     })
         .then((result) => {
-            res.send("hashtag updated successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err);
@@ -65,7 +68,7 @@ app.delete("/:userUUID/tag/:tagUUID", jwtcheck, authorizeuserUUID, moderatorChec
         },
     })
         .then((result) => {
-            res.send("hashtag deleted successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err);
@@ -118,6 +121,10 @@ app.post("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (req,
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const userId = result.id;
 
     result = await hashtags.findOne({
@@ -135,6 +142,10 @@ app.post("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (req,
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const hashtagId = result.id;
 
     await hashtagModerators.create({
@@ -142,7 +153,7 @@ app.post("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (req,
         "hashtagId": hashtagId,
     })
         .then((result) => {
-            res.send("moderator added successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -174,6 +185,10 @@ app.delete("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (re
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const userId = result.id;
 
     result = await hashtags.findOne({
@@ -191,6 +206,10 @@ app.delete("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (re
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const hashtagId = result.id;
 
     await hashtagModerators.destroy({
@@ -204,7 +223,10 @@ app.delete("/:hashtagUUID/moderators/:userUUID", jwtcheck, adminCheck, async (re
         },
     })
         .then((result) => {
-            res.send("moderator added successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -236,6 +258,10 @@ app.get("/:hashtagUUID/moderators", async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const hashtagId = result.id;
 

@@ -97,26 +97,9 @@ app.get("/:profileUUID/followings", async (req, res) => {
 * @check check jwt signature, match profile uuid from payload
 */
 app.post("/:profileUUID/follows/:beingFollowedProfileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
-    const followerProfileUUID = req.params.profileUUID;
+    const followerProfileId = req.userinfo.profileId;
     const beingFollowedProfileUUID = req.params.beingFollowedProfileUUID;
     let error = false;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: followerProfileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const followerProfileId = result.id;
 
     result = await profiles.findOne({
         where: {
@@ -170,7 +153,7 @@ app.post("/:profileUUID/follows/:beingFollowedProfileUUID", jwtcheck, authorizeP
         "followerProfileId": followerProfileId,
     })
         .then((result) => {
-            res.send("user followed successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -183,26 +166,9 @@ app.post("/:profileUUID/follows/:beingFollowedProfileUUID", jwtcheck, authorizeP
 * @check check jwt signature, match profile uuid from payload
 */
 app.delete("/:profileUUID/unfollows/:beingFollowedProfileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
-    const followerProfileUUID = req.ppllarams.followerProfileUUID;
+    const followerProfileId = req.userinfo.profileId;
     const beingFollowedProfileUUID = req.params.beingFollowedProfileUUID;
     let error = false;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: followerProfileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const followerProfileId = result.id;
 
     result = await profiles.findOne({
         where: {
@@ -257,7 +223,10 @@ app.delete("/:profileUUID/unfollows/:beingFollowedProfileUUID", jwtcheck, author
         "beingFollowedProfileId": beingFollowedProfileId,
     })
         .then((result) => {
-            res.send("user unfollowed successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);

@@ -33,7 +33,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
 
     await comments.create(req.body)
         .then((result) => {
-            res.send("comment has been added successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -62,6 +62,10 @@ app.get("/:commentUUID", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const commentId = result.id;
 
     await comments.findOne({
@@ -72,6 +76,9 @@ app.get("/:commentUUID", async (req, res) => {
         },
     })
         .then((result) => {
+            if (result == null) {
+                return res.status(409).send("invalid resource");
+            }
             res.send(result);
         })
         .catch((err) => {
@@ -102,6 +109,10 @@ app.get("/:postUUID/comments", async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const postId = result.id;
 
@@ -146,6 +157,10 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const commentId = result.id;
 
     result = await posts.findOne({
@@ -162,6 +177,10 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const postId = result.id;
 
@@ -188,7 +207,10 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
         },
     })
         .then((result) => {
-            res.send("comment removed successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -221,6 +243,10 @@ app.put("/:commentUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const commentId = result.id;
 
     await comments.update(req.body, {
@@ -231,7 +257,10 @@ app.put("/:commentUUID", jwtcheck, async (req, res) => {
         },
     })
         .then((result) => {
-            res.send("comment updated successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -262,6 +291,10 @@ app.get("/:commentUUID/likes", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const commentId = result.id;
 
     await likesOnComment.findAll({
@@ -287,7 +320,7 @@ app.get("/:commentUUID/likes", async (req, res) => {
 */
 app.post("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const commentUUID = req.params.commentUUID;
-    const profileUUID = req.params.profileUUID;
+    const profileId = req.userinfo.profileId;
     let error = false;
 
     result = await comments.findOne({
@@ -305,24 +338,11 @@ app.post("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, asy
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const commentId = result.id;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: profileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const profileId = result.id;
 
     // increment like count
     await comments.increment('likesCount', {
@@ -341,7 +361,7 @@ app.post("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, asy
 
     await likesOnComment.create({ "commentId": commentId, "profileId": profileId })
         .then((result) => {
-            res.send("coment liked successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -354,7 +374,7 @@ app.post("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, asy
 */
 app.delete("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const commentUUID = req.params.commentUUID;
-    const profileUUID = req.params.profileUUID;
+    const profileId = req.userinfo.profileId;
     let error = false;
 
     result = await comments.findOne({
@@ -372,24 +392,11 @@ app.delete("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, a
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const commentId = result.id;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: profileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const profileId = result.id;
 
     // decrement like count
     await comments.decrement('likesCount', {
@@ -417,7 +424,10 @@ app.delete("/:profileUUID/likes/:commentUUID", jwtcheck, authorizeProfileUUID, a
         }
     })
         .then((result) => {
-            res.send("comment unliked successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);

@@ -17,7 +17,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
 
     await chatrooms.create(req.body)
         .then((result) => {
-            res.send("chatroom created successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -39,6 +39,9 @@ app.get("/:chatroomUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
+            if (result == null) {
+                return res.status(409).send("invalid resource");
+            }
             res.send(result);
         })
         .catch((err) => {
@@ -64,7 +67,10 @@ app.put("/:chatroomUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("chatroom updated successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -86,7 +92,10 @@ app.delete("/:chatroomUUID", jwtcheck, async (req, res) => {
         },
     })
         .then((result) => {
-            res.send("chatroom deleted successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -117,6 +126,10 @@ app.get("/:chatroomUUID/chats", jwtcheck, async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const chatroomId = result.id;
 
@@ -163,13 +176,17 @@ app.post("/:chatroomUUID/chats/", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const chatroomId = result.id;
 
     req.body.chatroomId = chatroomId;
 
     await chats.create(req.body)
         .then((result) => {
-            res.send("chat added successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -200,6 +217,10 @@ app.delete("/:chatroomUUID/chats/:chatUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const chatroomId = result.id;
 
     await chats.destroy({
@@ -213,7 +234,10 @@ app.delete("/:chatroomUUID/chats/:chatUUID", jwtcheck, async (req, res) => {
         },
     })
         .then((result) => {
-            res.send("chat removed successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);

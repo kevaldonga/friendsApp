@@ -3,14 +3,14 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    queryInterface.addColumn("users", "role", {
-      type: Sequelize.ENUM('user', 'admin', 'moderator'),
+    queryInterface.addColumn("posts", "bookmarkCount", {
+      type: Sequelize.INTEGER,
       allowNull: false,
-      defaultValue: 'user',
+      defaultValue: 0,
     });
   },
 
   async down(queryInterface, Sequelize) {
-    queryInterface.removeColumn("users", "role");
+    queryInterface.removeColumn("posts", "bookmarkCount");
   }
 };

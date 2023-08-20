@@ -1,6 +1,6 @@
 const app = require('express').Router();
 const bodyParser = require('body-parser');
-const { posts, hashtagsOnPost, likesOnPost, profiles } = require('../models');
+const { posts, hashtagsOnPost, likesOnPost, profiles, bookmarksOnPost } = require('../models');
 const { Op } = require('sequelize');
 const { defaultNullFields } = require('./validations/nullcheck');
 const { jwtcheck, authorizeuid, authorizeProfileUUID } = require('../middleware/jwtcheck');
@@ -29,6 +29,10 @@ app.get("/:postUUID", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
 
     await posts.findOne({
@@ -39,6 +43,9 @@ app.get("/:postUUID", async (req, res) => {
         }
     })
         .then((result) => {
+            if (result == null) {
+                return res.status(409).send("invalid resource");
+            }
             res.send(result);
         })
         .catch((err) => {
@@ -70,6 +77,10 @@ app.get("/:profileUUID/posts", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const profileId = result.id;
 
     await posts.findAll({
@@ -99,7 +110,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
 
     await posts.create(req.body)
         .then((result) => {
-            res.send("post created successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -132,6 +143,10 @@ app.put("/:postUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
 
     await posts.update(req.body, {
@@ -142,7 +157,10 @@ app.put("/:postUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("post updated successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -172,6 +190,10 @@ app.delete("/:postUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
 
     await posts.destory({
@@ -182,7 +204,7 @@ app.delete("/:postUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("post deleted successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -212,6 +234,10 @@ app.get("/:postUUID/hashtags", async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const postId = result.id;
 
@@ -256,6 +282,10 @@ app.post("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
 
     result = await hashatags.findOne({
@@ -273,11 +303,15 @@ app.post("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const hashtagId = result.id;
 
     await hashtagsOnPost.create({ "postId": postId, "hashtagId": hashtagId })
         .then((result) => {
-            res.send("hashtag added on post successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -308,6 +342,10 @@ app.delete("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
 
     result = await hashatags.findOne({
@@ -325,11 +363,27 @@ app.delete("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const hashtagId = result.id;
 
-    await hashtagsOnPost.destroy({ "postId": postId, "hashtagId": hashtagId })
+    await hashtagsOnPost.destroy({
+        where: {
+            "postId": {
+                [Op.eq]: postId
+            },
+            "hashtagId": {
+                [Op.eq]: hashtagId
+            },
+        },
+    })
         .then((result) => {
-            res.send("hashtag removed successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -360,6 +414,10 @@ app.get("/:postUUID/likes", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
 
     await likesOnPost.findAll({
@@ -384,7 +442,7 @@ app.get("/:postUUID/likes", async (req, res) => {
 * @check check jwt signature, match profile uuid from payload
 */
 app.post("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
-    const profileUUID = req.params.profileUUID;
+    const profileId = req.userinfo.profileId;
     const postUUID = req.params.postUUID;
     let error = false;
 
@@ -403,24 +461,11 @@ app.post("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async 
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: profileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const profileId = result.id;
 
     // increment like count
     await comments.increment('likesCount', {
@@ -439,7 +484,7 @@ app.post("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async 
 
     await likesOnPost.create({ "postId": postId, "profileId": profileId })
         .then((result) => {
-            res.send("liked on post successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -452,7 +497,7 @@ app.post("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async 
 */
 app.delete("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const postUUID = req.params.postUUID;
-    const profileUUID = req.params.profileUUID;
+    const profileId = req.userinfo.profileId;
     let error = false;
 
     result = await posts.findOne({
@@ -470,25 +515,11 @@ app.delete("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, asyn
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const postId = result.id;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: profileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const profileId = result.id;
-
 
     // decrement like count
     await comments.decrement('likesCount', {
@@ -516,10 +547,129 @@ app.delete("/:profileUUID/likes/:postUUID", jwtcheck, authorizeProfileUUID, asyn
         }
     })
         .then((result) => {
-            res.send("post unliked successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
+        });
+});
+
+/* 
+* /:postUUID/bookmarks - POST - add bookmark to post
+* @check check jwt signature
+*/
+app.post("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const profileId = req.userinfo.profileId;
+
+    let error = false;
+
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err);
+        });
+
+    if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
+    const postId = result.id;
+
+    await posts.increment("bookmarkCount", {
+        where: {
+            "id": {
+                [Op.eq]: postId,
+            },
+        },
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err);
+        });
+
+    if (error) return;
+
+    await bookmarksOnPost.create({
+        "postId": postId,
+        "profileId": profileId,
+    })
+        .then((result) => {
+            res.send("SUCCESS");
+        })
+        .catch((err) => {
+            res.send(403).send(err);
+        });
+});
+/* 
+* /:postUUID/bookmarks - DELETE - add bookmark to post
+* @check jwt signature
+*/
+app.delete("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
+    const postUUID = req.params.postUUID;
+    const profileId = req.userinfo.profileId;
+
+    let error = false;
+
+    result = await posts.findOne({
+        where: {
+            "uuid": {
+                [Op.eq]: postUUID,
+            },
+        },
+        attributes: ['id'],
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err);
+        });
+
+    if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
+    const postId = result.id;
+
+    await posts.decrement("bookmarkCount", {
+        where: {
+            "id": {
+                [Op.eq]: postId,
+            },
+        },
+    })
+        .catch((err) => {
+            error = true;
+            res.status(403).send(err);
+        });
+
+    if (error) return;
+
+    await bookmarksOnPost.destory({
+        where: {
+            "postId": {
+                [Op.eq]: postId,
+            },
+            "profileId": {
+                [Op.eq]: profileId,
+            },
+        }
+    })
+        .then((result) => {
+            res.send("SUCCESS");
+        })
+        .catch((err) => {
+            res.send(403).send(err);
         });
 });
 

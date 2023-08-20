@@ -24,6 +24,9 @@ app.get("/:uid", jwtcheck, authorizeuid, async (req, res) => {
         }
     })
         .then((result) => {
+            if (result == null) {
+                return res.status(409).send("invalid resource");
+            }
             res.send(result);
         })
         .catch((err) => {
@@ -53,6 +56,10 @@ app.get("/generatetoken/:uid", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const uuid = result.uuid;
     const profileId = result.profiles.id;
     const profileUUID = result.profiles.uuid;
@@ -78,7 +85,7 @@ app.post("/", async (req, res) => {
 
     await users.create(req.body)
         .then((result) => {
-            res.send("user created successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -103,7 +110,10 @@ app.put("/:uid", jwtcheck, authorizeuid, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("user updated successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -125,7 +135,10 @@ app.delete("/:uid", jwtcheck, authorizeuid, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("user deleted successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);

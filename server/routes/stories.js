@@ -17,7 +17,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
 
     await stories.create(req.body)
         .then((result) => {
-            res.send("tag created successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -46,6 +46,10 @@ app.post("/:storyUUID", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const storyId = result.id;
 
     await stories.findOne({
@@ -56,6 +60,9 @@ app.post("/:storyUUID", async (req, res) => {
         }
     })
         .then((result) => {
+            if (result == null) {
+                return res.status(409).send("invalid resource");
+            }
             res.send(result);
         })
         .catch((err) => {
@@ -86,6 +93,10 @@ app.get("/profile/:profileUUID", async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const profileId = result.id;
 
@@ -124,7 +135,10 @@ app.put("/:storyUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("story updated successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -146,7 +160,7 @@ app.delete("/:storyUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("story deleted successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -176,6 +190,10 @@ app.get("/:storyUUID/hashtags", async (req, res) => {
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const storyId = result.id;
 
@@ -220,6 +238,10 @@ app.post("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const storyId = result.id;
 
     result = await hashtags.findOne({
@@ -237,12 +259,15 @@ app.post("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
 
     const hashtagId = result.id;
 
     await hashtagsOnStory.create({ "storyId": storyId, "hashtagId": hashtagId })
         .then((result) => {
-            res.send("hashtag added in story successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -273,6 +298,10 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const storyId = result.id;
 
     result = await hashtags.findOne({
@@ -290,6 +319,10 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     await hashtagsOnStory.destory({
         where: {
             "storyId": {
@@ -301,7 +334,7 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
         }
     })
         .then((result) => {
-            res.send("hashtag removed successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -332,6 +365,10 @@ app.get("/:storyUUID/likes", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const storyId = result.id;
 
     await likesOnStory.findAll({
@@ -357,7 +394,7 @@ app.get("/:storyUUID/likes", async (req, res) => {
 */
 app.post("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const storyUUID = req.params.storyUUID;
-    const profileUUID = req.params.profileUUID;
+    const profileId = req.userinfo.profileId;
     let error = false;
 
     result = await stories.findOne({
@@ -375,24 +412,11 @@ app.post("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     const storyId = result.id;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: profileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
-    if (error) return;
-
-    const profileId = result.id;
 
     // increment likes count in story
     await stories.increment('likesCount', {
@@ -409,9 +433,13 @@ app.post("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     await likesOnStory.create({ "storyId": storyId, "profileId": profileId })
         .then((result) => {
-            res.send("liked on story successfully!!");
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);
@@ -424,7 +452,7 @@ app.post("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async
 */
 app.delete("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     const storyUUID = req.params.storyUUID;
-    const profileUUID = req.params.profileUUID;
+    const profileId = req.userinfo.profileId;
     let error = false;
 
     result = await stories.findOne({
@@ -440,26 +468,13 @@ app.delete("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, asy
             res.status(403).send(err.message);
         });
 
-    if (error) return;;
-
-    const storyId = result.id;
-
-    result = await profiles.findOne({
-        where: {
-            "uuid": {
-                [Op.eq]: profileUUID,
-            },
-        },
-        attributes: ['id'],
-    })
-        .catch((err) => {
-            error = true;
-            res.status(403).send(err.message);
-        });
-
     if (error) return;
 
-    const profileId = result.id;
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
+    const storyId = result.id;
 
     // decrement likes count in story
     await stories.decrement('likesCount', {
@@ -476,6 +491,10 @@ app.delete("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, asy
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("invalid resource");
+    }
+
     await likesOnStory.destroy({
         where: {
             "storyId": {
@@ -487,7 +506,10 @@ app.delete("/:profileUUID/likes/:storyUUID", jwtcheck, authorizeProfileUUID, asy
         }
     })
         .then((result) => {
-            res.send("unliked story successfully!!");
+            if (result == 0) {
+                return res.status(409).send("invalid resource");
+            }
+            res.send("SUCCESS");
         })
         .catch((err) => {
             res.status(403).send(err.message);

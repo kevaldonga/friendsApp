@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     media: { type: DataTypes.STRING, allowNull: false },
     likesCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     commentsCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    bookmarkCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
   }, {
     sequelize,
