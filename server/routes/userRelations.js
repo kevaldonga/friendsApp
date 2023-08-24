@@ -30,6 +30,10 @@ app.get("/:profileUUID/followers", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("Invalid resource");
+    }
+
     const profileId = result.id;
 
     await userRelation.findAll({
@@ -73,6 +77,10 @@ app.get("/:profileUUID/followings", async (req, res) => {
 
     if (error) return;
 
+    if (result == null) {
+        return res.status(409).send("Invalid resource");
+    }
+
     const profileId = result.id;
 
     result = await userRelation.findAll({
@@ -114,6 +122,10 @@ app.post("/:profileUUID/follows/:beingFollowedProfileUUID", jwtcheck, authorizeP
     });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("Invalid resource");
+    }
 
     const beingFollowedProfileId = result.id;
 
@@ -184,6 +196,10 @@ app.delete("/:profileUUID/unfollows/:beingFollowedProfileUUID", jwtcheck, author
         });
 
     if (error) return;
+
+    if (result == null) {
+        return res.status(409).send("Invalid resource");
+    }
 
     const beingFollowedProfileId = result.id;
 
