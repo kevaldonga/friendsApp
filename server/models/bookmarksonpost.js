@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class bookmarksOnPost extends Model {
     /**
@@ -14,13 +12,20 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.posts);
     }
   }
-  bookmarksOnPost.init({
-    profileId: { type: DataTypes.INTEGER, allowNull: false },
-    postId: { type: DataTypes.INTEGER, allowNull: false },
-    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 },
-  }, {
-    sequelize,
-    modelName: 'bookmarksOnPost',
-  });
+  bookmarksOnPost.init(
+    {
+      profileId: { type: DataTypes.INTEGER, allowNull: false },
+      postId: { type: DataTypes.INTEGER, allowNull: false },
+      uuid: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        defaultValue: DataTypes.UUIDV4,
+      },
+    },
+    {
+      sequelize,
+      modelName: "bookmarksOnPost",
+    },
+  );
   return bookmarksOnPost;
 };

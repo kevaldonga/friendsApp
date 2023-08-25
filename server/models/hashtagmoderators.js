@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class hashtagModerators extends Model {
     /**
@@ -14,13 +12,20 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.hashtags);
     }
   }
-  hashtagModerators.init({
-    userId: { type: DataTypes.INTEGER, allowNull: false },
-    hashtagId: { type: DataTypes.INTEGER, allowNull: false },
-    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
-  }, {
-    sequelize,
-    modelName: 'hashtagModerators',
-  });
+  hashtagModerators.init(
+    {
+      userId: { type: DataTypes.INTEGER, allowNull: false },
+      hashtagId: { type: DataTypes.INTEGER, allowNull: false },
+      uuid: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        defaultValue: DataTypes.UUIDV4,
+      },
+    },
+    {
+      sequelize,
+      modelName: "hashtagModerators",
+    },
+  );
   return hashtagModerators;
 };

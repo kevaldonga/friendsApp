@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class hashtagsOnStory extends Model {
     /**
@@ -14,13 +12,20 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.hashtags);
     }
   }
-  hashtagsOnStory.init({
-    storyId: { type: DataTypes.INTEGER, allowNull: false },
-    hashtagId: { type: DataTypes.INTEGER, allowNull: false },
-    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
-  }, {
-    sequelize,
-    modelName: 'hashtagsOnStory',
-  });
+  hashtagsOnStory.init(
+    {
+      storyId: { type: DataTypes.INTEGER, allowNull: false },
+      hashtagId: { type: DataTypes.INTEGER, allowNull: false },
+      uuid: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        defaultValue: DataTypes.UUIDV4,
+      },
+    },
+    {
+      sequelize,
+      modelName: "hashtagsOnStory",
+    },
+  );
   return hashtagsOnStory;
 };

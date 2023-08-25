@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class likesOnComment extends Model {
     /**
@@ -14,13 +12,20 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.comments);
     }
   }
-  likesOnComment.init({
-    profileId: { type: DataTypes.INTEGER, allowNull: false },
-    commentId: { type: DataTypes.INTEGER, allowNull: false },
-    uuid: { type: DataTypes.UUID, allowNull: false, defaultValue: DataTypes.UUIDV4 }
-  }, {
-    sequelize,
-    modelName: 'likesOnComment',
-  });
+  likesOnComment.init(
+    {
+      profileId: { type: DataTypes.INTEGER, allowNull: false },
+      commentId: { type: DataTypes.INTEGER, allowNull: false },
+      uuid: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        defaultValue: DataTypes.UUIDV4,
+      },
+    },
+    {
+      sequelize,
+      modelName: "likesOnComment",
+    },
+  );
   return likesOnComment;
 };

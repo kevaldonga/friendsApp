@@ -1,9 +1,8 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-
     // followers
     queryInterface.addColumn("profiles", "followers", {
       type: Sequelize.INTEGER,
@@ -23,6 +22,5 @@ module.exports = {
     queryInterface.removeColumn("profiles", "followers");
     // followings
     queryInterface.removeColumn("profiles", "followings");
-
-  }
+  },
 };

@@ -1,34 +1,34 @@
-'use strict';
+"use strict";
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('hashtagModerators', {
+    await queryInterface.createTable("hashtagModerators", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       userId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       hashtagId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       uuid: {
-        type: Sequelize.UUID
+        type: Sequelize.UUID,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('hashtagModerators');
-  }
+    await queryInterface.dropTable("hashtagModerators");
+  },
 };
