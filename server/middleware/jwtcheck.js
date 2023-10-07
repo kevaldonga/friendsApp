@@ -14,7 +14,7 @@ const jwtcheck = (req, res, next) => {
   }
 
   if (token === undefined) {
-    res.status(403).send("Access denied");
+    res.status(403).send({ error: true, res: "Access denied" });
     return;
   }
 
@@ -23,7 +23,7 @@ const jwtcheck = (req, res, next) => {
     req.userinfo = user;
     next();
   } catch (e) {
-    res.status(403).send("invalid");
+    res.status(403).send({ error: true, res: "invalid" });
   }
 };
 
@@ -31,21 +31,21 @@ const authorizeuid = (req, res, next) => {
   if (req.userinfo.uid == req.params.uid) {
     next();
   }
-  res.status(403).send("access denied");
+  res.status(403).send({ error: true, res: "Access denied" });
 };
 
 const authorizeProfileUUID = (req, res, next) => {
   if (req.userinfo.profileUUID == req.params.profileUUID) {
     next();
   }
-  res.status(403).send("access denined");
+  res.status(403).send({ error: true, res: "Access denied" });
 };
 
 const authorizeuserUUID = (req, res, next) => {
   if (req.userinfo.userUUID == req.params.profileUUID) {
     next();
   }
-  res.status(403).send("access denined");
+  res.status(403).send({ error: true, res: "Access denied" });
 };
 
 module.exports = {

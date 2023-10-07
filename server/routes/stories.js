@@ -25,15 +25,15 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     nonNullableFields: ["profileId", "media"],
     mustBeNullFields: [...defaultNullFields, "likesCount"],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   await stories
     .create(req.body)
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -55,13 +55,13 @@ app.post("/:storyUUID", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const storyId = result.id;
@@ -76,12 +76,12 @@ app.post("/:storyUUID", async (req, res) => {
     })
     .then((result) => {
       if (result == null) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -105,13 +105,13 @@ app.get("/profile/:profileUUID", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const profileId = result.id;
@@ -127,10 +127,10 @@ app.get("/profile/:profileUUID", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -142,7 +142,7 @@ app.put("/:storyUUID", jwtcheck, async (req, res) => {
   value = nullCheck(req.body, {
     mustBeNullFields: [...defaultNullFields, "profileId", "likesCount"],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   const storyUUID = req.params.storyUUID;
 
@@ -156,12 +156,12 @@ app.put("/:storyUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -181,10 +181,10 @@ app.delete("/:storyUUID", jwtcheck, async (req, res) => {
       },
     })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -208,13 +208,13 @@ app.get("/:storyUUID/hashtags", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const storyId = result.id;
@@ -230,10 +230,10 @@ app.get("/:storyUUID/hashtags", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -257,13 +257,13 @@ app.post("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const storyId = result.id;
@@ -279,13 +279,13 @@ app.post("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const hashtagId = result.id;
@@ -293,10 +293,10 @@ app.post("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
   await hashtagsOnStory
     .create({ storyId: storyId, hashtagId: hashtagId })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -320,13 +320,13 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const storyId = result.id;
@@ -342,13 +342,13 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   await hashtagsOnStory
@@ -363,10 +363,10 @@ app.delete("/:storyUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
       },
     })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -391,13 +391,13 @@ app.get("/:storyUUID/likes", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const storyId = result.id;
@@ -413,10 +413,10 @@ app.get("/:storyUUID/likes", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -444,13 +444,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const storyId = result.id;
@@ -466,22 +466,22 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     await likesOnStory
       .create({ storyId: storyId, profileId: profileId })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -510,13 +510,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const storyId = result.id;
@@ -532,13 +532,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     await likesOnStory
@@ -554,12 +554,12 @@ app.delete(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );

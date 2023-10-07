@@ -16,15 +16,15 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     nonNullableFields: ["profileId1", "profileId2"],
     mustBeNullFields: [...defaultNullFields, "profileId1", "profileId2"],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   await chatrooms
     .create(req.body)
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -45,12 +45,12 @@ app.get("/:chatroomUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == null) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -63,7 +63,7 @@ app.put("/:chatroomUUID", jwtcheck, async (req, res) => {
     nonNullableFields: ["background"],
     mustBeNullFields: [...defaultNullFields, "profileId1", "profileId2"],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   const chatroomUUID = req.params.chatroomUUID;
 
@@ -77,12 +77,12 @@ app.put("/:chatroomUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -103,12 +103,12 @@ app.delete("/:chatroomUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -133,13 +133,13 @@ app.get("/:chatroomUUID/chats", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const chatroomId = result.id;
@@ -155,10 +155,10 @@ app.get("/:chatroomUUID/chats", jwtcheck, async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -168,7 +168,7 @@ app.get("/:chatroomUUID/chats", jwtcheck, async (req, res) => {
  */
 app.post("/:chatroomUUID/chats/", jwtcheck, async (req, res) => {
   value = nullCheck(req.body, { nonNullableFields: ["profileId"] });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
   let error = false;
 
   const chatroomUUID = req.params.chatroomUUID;
@@ -184,13 +184,13 @@ app.post("/:chatroomUUID/chats/", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const chatroomId = result.id;
@@ -200,10 +200,10 @@ app.post("/:chatroomUUID/chats/", jwtcheck, async (req, res) => {
   await chats
     .create(req.body)
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -227,13 +227,13 @@ app.delete("/:chatroomUUID/chats/:chatUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const chatroomId = result.id;
@@ -251,12 +251,12 @@ app.delete("/:chatroomUUID/chats/:chatUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 

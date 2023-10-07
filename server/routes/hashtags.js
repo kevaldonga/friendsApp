@@ -22,15 +22,15 @@ app.post(
       nonNullableFields: ["tag", "description", "color", "image"],
       mustBeNullFields: defaultNullFields,
     });
-    if (typeof value != "string") return res.status(409).send(value);
+    if (typeof value != "string") return res.status(409).send({ error: true, res: value });
 
     await hashtags
       .create(req.body)
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err);
+        res.status(403).send({ error: true, errObj: err, res: err.message });
       });
   },
 );
@@ -48,7 +48,7 @@ app.put(
     value = nullCheck(req.body, {
       mustBeNullFields: [...defaultNullFields, "tag"],
     });
-    if (typeof value != "string") return res.status(409).send(value);
+    if (typeof value != "string") return res.status(409).send({ error: true, res: value });
 
     const tagUUID = req.params.tagUUID;
 
@@ -62,12 +62,12 @@ app.put(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err);
+        res.status(403).send({ error: true, errObj: err, res: err.message });
       });
   },
 );
@@ -93,10 +93,10 @@ app.delete(
         },
       })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err);
+        res.status(403).send({ error: true, errObj: err, res: err.message });
       });
   },
 );
@@ -116,10 +116,10 @@ app.get("/:tagUUID", async (req, res) => {
       },
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err);
+      res.status(403).send({ error: true, errObj: err, res: err.message });
     });
 });
 
@@ -148,13 +148,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(409).send(err.message);
+        res.status(409).send({ error: true, errObj: err, res: err.message });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const userId = result.id;
@@ -170,13 +170,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(409).send(err.message);
+        res.status(409).send({ error: true, errObj: err, res: err.message });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const hashtagId = result.id;
@@ -187,10 +187,10 @@ app.post(
         hashtagId: hashtagId,
       })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -220,13 +220,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(409).send(err.message);
+        res.status(409).send({ error: true, errObj: err, res: err.message });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const userId = result.id;
@@ -242,13 +242,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(409).send(err.message);
+        res.status(409).send({ error: true, errObj: err, res: err.message });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const hashtagId = result.id;
@@ -266,12 +266,12 @@ app.delete(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -298,13 +298,13 @@ app.get("/:hashtagUUID/moderators", async (req, res) => {
     .catch((err) => {
       error = true;
 
-      res.status(409).send(err.message);
+      res.status(409).send({ error: true, errObj: err, res: err.message });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const hashtagId = result.id;
@@ -324,6 +324,6 @@ app.get("/:hashtagUUID/moderators", async (req, res) => {
       res.send(result.users);
     })
     .catch((err) => {
-      res.status(409).send(err.message);
+      res.status(409).send({ error: true, errObj: err, res: err.message });
     });
 });

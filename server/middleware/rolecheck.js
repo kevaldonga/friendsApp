@@ -5,7 +5,7 @@ const adminCheck = (req, res, next) => {
   if (req.userinfo.role === "admin") {
     next();
   } else {
-    res.status(403).send("forbidden");
+    res.status(403).send({ error: true, res: "forbidden" });
   }
 };
 
@@ -13,7 +13,7 @@ const moderatorCheck = (req, res, next) => {
   if (req.userinfo.role === "moderator") {
     next();
   } else {
-    res.status(403).send("forbidden");
+    res.status(403).send({ error: true, res: "forbidden" });
   }
 };
 

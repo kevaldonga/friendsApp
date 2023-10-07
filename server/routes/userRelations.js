@@ -26,13 +26,13 @@ app.get("/:profileUUID/followers", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("Invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const profileId = result.id;
@@ -48,10 +48,10 @@ app.get("/:profileUUID/followers", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -75,13 +75,13 @@ app.get("/:profileUUID/followings", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("Invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const profileId = result.id;
@@ -97,10 +97,10 @@ app.get("/:profileUUID/followings", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -128,13 +128,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("Invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const beingFollowedProfileId = result.id;
@@ -150,7 +150,7 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -166,7 +166,7 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -178,10 +178,10 @@ app.post(
         followerProfileId: followerProfileId,
       })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -210,13 +210,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("Invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const beingFollowedProfileId = result.id;
@@ -233,7 +233,7 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -250,7 +250,7 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -263,12 +263,12 @@ app.delete(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );

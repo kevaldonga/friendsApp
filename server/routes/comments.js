@@ -20,7 +20,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     nonNullableFields: ["postId", "comment", "profileId"],
     mustBeNullFields: [...defaultNullFields, "likesCount"],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
   let error = false;
 
   // increment comment count in post
@@ -34,7 +34,7 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
@@ -42,10 +42,10 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
   await comments
     .create(req.body)
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -67,13 +67,13 @@ app.get("/:commentUUID", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const commentId = result.id;
@@ -88,12 +88,12 @@ app.get("/:commentUUID", async (req, res) => {
     })
     .then((result) => {
       if (result == null) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -117,13 +117,13 @@ app.get("/:postUUID/comments", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -139,10 +139,10 @@ app.get("/:postUUID/comments", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -166,13 +166,13 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const commentId = result.id;
@@ -188,13 +188,13 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -210,7 +210,7 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
@@ -225,12 +225,12 @@ app.delete("/:commentUUID/post/:postUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -248,7 +248,7 @@ app.put("/:commentUUID", jwtcheck, async (req, res) => {
       "likesCount",
     ],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
   let error = false;
 
   const commentUUID = req.params.commentUUID;
@@ -264,13 +264,13 @@ app.put("/:commentUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const commentId = result.id;
@@ -285,12 +285,12 @@ app.put("/:commentUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -314,13 +314,13 @@ app.get("/:commentUUID/likes", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const commentId = result.id;
@@ -336,10 +336,10 @@ app.get("/:commentUUID/likes", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -367,13 +367,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const commentId = result.id;
@@ -389,7 +389,7 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -397,10 +397,10 @@ app.post(
     await likesOnComment
       .create({ commentId: commentId, profileId: profileId })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -429,13 +429,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const commentId = result.id;
@@ -451,7 +451,7 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -469,12 +469,12 @@ app.delete(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );

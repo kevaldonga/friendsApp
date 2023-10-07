@@ -35,13 +35,13 @@ app.get("/:postUUID", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -56,12 +56,12 @@ app.get("/:postUUID", async (req, res) => {
     })
     .then((result) => {
       if (result == null) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -85,13 +85,13 @@ app.get("/:profileUUID/posts", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const profileId = result.id;
@@ -107,10 +107,10 @@ app.get("/:profileUUID/posts", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -123,15 +123,15 @@ app.post("/:uid", jwtcheck, authorizeuid, async (req, res) => {
     nonNullableFields: ["profileId", "title", "media"],
     mustBeNullFields: [...defaultNullFields, "likesCount", "commentsCount"],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   await posts
     .create(req.body)
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -149,7 +149,7 @@ app.put("/:postUUID", jwtcheck, async (req, res) => {
       "commentsCount",
     ],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
   let error = false;
 
   const postUUID = req.params.postUUID;
@@ -165,13 +165,13 @@ app.put("/:postUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -186,12 +186,12 @@ app.put("/:postUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -214,13 +214,13 @@ app.delete("/:postUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -234,10 +234,10 @@ app.delete("/:postUUID", jwtcheck, async (req, res) => {
       },
     })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -261,13 +261,13 @@ app.get("/:postUUID/hashtags", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -283,10 +283,10 @@ app.get("/:postUUID/hashtags", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -310,13 +310,13 @@ app.post("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -332,13 +332,13 @@ app.post("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const hashtagId = result.id;
@@ -346,10 +346,10 @@ app.post("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
   await hashtagsOnPost
     .create({ postId: postId, hashtagId: hashtagId })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -373,13 +373,13 @@ app.delete("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -395,13 +395,13 @@ app.delete("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const hashtagId = result.id;
@@ -419,12 +419,12 @@ app.delete("/:postUUID/hashtags/:hashtagUUID", jwtcheck, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -448,13 +448,13 @@ app.get("/:postUUID/likes", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -470,10 +470,10 @@ app.get("/:postUUID/likes", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -501,13 +501,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const postId = result.id;
@@ -523,7 +523,7 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -531,10 +531,10 @@ app.post(
     await likesOnPost
       .create({ postId: postId, profileId: profileId })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -563,13 +563,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const postId = result.id;
@@ -585,7 +585,7 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
@@ -602,10 +602,10 @@ app.delete(
         },
       })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -631,13 +631,13 @@ app.post("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err);
+      res.status(403).send({ error: true, errObj: err, res: err.message });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -652,7 +652,7 @@ app.post("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err);
+      res.status(403).send({ error: true, errObj: err, res: err.message });
     });
 
   if (error) return;
@@ -663,10 +663,10 @@ app.post("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
       profileId: profileId,
     })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.send(403).send(err);
+      res.send(403).send({ error: true, errObj: err, res: err.message });
     });
 });
 /*
@@ -690,13 +690,13 @@ app.delete("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err);
+      res.status(403).send({ error: true, errObj: err, res: err.message });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const postId = result.id;
@@ -711,7 +711,7 @@ app.delete("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err);
+      res.status(403).send({ error: true, errObj: err, res: err.message });
     });
 
   if (error) return;
@@ -728,10 +728,10 @@ app.delete("/:postUUID/bookmarks", jwtcheck, async (req, res) => {
       },
     })
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.send(403).send(err);
+      res.send(403).send({ error: true, errObj: err, res: err.message });
     });
 });
 

@@ -23,12 +23,12 @@ app.get("/:profileUUID", async (req, res) => {
     })
     .then((result) => {
       if (result == null) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -46,15 +46,15 @@ app.post("/", jwtcheck, async (req, res) => {
       "followings",
     ],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   await profiles
     .create(req.body)
     .then((result) => {
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -72,7 +72,7 @@ app.put("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
       "isActive",
     ],
   });
-  if (typeof value == "string") return res.status(409).send(value);
+  if (typeof value == "string") return res.status(409).send({ error: true, res: value });
 
   const profileId = req.userinfo.profileId;
 
@@ -86,12 +86,12 @@ app.put("/:profileUUID", jwtcheck, authorizeProfileUUID, async (req, res) => {
     })
     .then((result) => {
       if (result == 0) {
-        return res.status(409).send("invalid resource");
+        return res.status(409).send({ error: true, res: "invalid resource" });
       }
-      res.send("SUCCESS");
+      res.send({ error: false, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -116,12 +116,12 @@ app.delete(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -146,13 +146,13 @@ app.get("/:profileUUID/hashtags", async (req, res) => {
     })
     .catch((err) => {
       error = true;
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 
   if (error) return;
 
   if (result == null) {
-    return res.status(409).send("invalid resource");
+    return res.status(409).send({ error: true, res: "invalid resource" });
   }
 
   const profileId = result.id;
@@ -168,10 +168,10 @@ app.get("/:profileUUID/hashtags", async (req, res) => {
       offset: offset,
     })
     .then((result) => {
-      res.send(result);
+      res.send({ error: false, obj: result, res: "SUCCESS" });
     })
     .catch((err) => {
-      res.status(403).send(err.message);
+      res.status(403).send({ error: true, res: err.message, errObj: err });
     });
 });
 
@@ -199,13 +199,13 @@ app.post(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     const hashtagId = result.id;
@@ -213,10 +213,10 @@ app.post(
     await hashtagsOnProfiles
       .create({ profileId: profileId, hashtagId: hashtagId })
       .then((result) => {
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -245,13 +245,13 @@ app.delete(
       })
       .catch((err) => {
         error = true;
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
 
     if (error) return;
 
     if (result == null) {
-      return res.status(409).send("invalid resource");
+      return res.status(409).send({ error: true, res: "invalid resource" });
     }
 
     await hashtagsOnProfiles
@@ -267,12 +267,12 @@ app.delete(
       })
       .then((result) => {
         if (result == 0) {
-          return res.status(409).send("invalid resource");
+          return res.status(409).send({ error: true, res: "invalid resource" });
         }
-        res.send("SUCCESS");
+        res.send({ error: false, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.status(403).send(err.message);
+        res.status(403).send({ error: true, res: err.message, errObj: err });
       });
   },
 );
@@ -296,10 +296,10 @@ app.get(
         attributes: ["id"],
       })
       .then((result) => {
-        res.send(result);
+        res.send({ error: false, obj: result, res: "SUCCESS" });
       })
       .catch((err) => {
-        res.send(err);
+        res.send({ error: true, errObj: err, res: err.message });
       });
   },
 );
