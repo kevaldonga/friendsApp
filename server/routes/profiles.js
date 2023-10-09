@@ -5,7 +5,7 @@ const { Op } = require("sequelize");
 const { nullCheck, defaultNullFields } = require("./validations/nullcheck");
 const { jwtcheck, authorizeProfileUUID } = require("../middleware/jwtcheck");
 
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.json());
 
 /*
  * /:profileUUID - GET - get a profile

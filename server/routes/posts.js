@@ -15,7 +15,7 @@ const {
   authorizeProfileUUID,
 } = require("../middleware/jwtcheck");
 
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.json());
 
 /*
  * /:postUUID - GET - get post

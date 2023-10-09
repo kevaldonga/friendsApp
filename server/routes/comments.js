@@ -9,7 +9,7 @@ const {
   authorizeProfileUUID,
 } = require("../middleware/jwtcheck");
 
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.json());
 
 /*
  * / - POST - create a comment
