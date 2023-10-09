@@ -6,7 +6,7 @@ const { nullCheck, defaultNullFields } = require("./validations/nullcheck");
 const { jwtcheck, authorizeuserUUID } = require("../middleware/jwtcheck");
 const { adminCheck, moderatorCheck } = require("../middleware/rolecheck");
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '1mb' }));
 
 /*
  * /:userUUID - POST - create a hashtag

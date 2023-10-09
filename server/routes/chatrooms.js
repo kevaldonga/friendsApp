@@ -5,7 +5,7 @@ const Op = require("sequelize");
 const { nullCheck, defaultNullFields } = require("./validations/nullcheck");
 const { jwtcheck, authorizeuid } = require("../middleware/jwtcheck");
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '1mb' }));
 
 /*
  * /:uid - POST - create a chatroom

@@ -7,7 +7,7 @@ const { jwt } = require("jsonwebtoken");
 const { JWTPRIVATEKEY } = require("./../config/globals");
 const { jwtcheck, authorizeuid } = require("../middleware/jwtcheck");
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '1mb' }));
 
 /*
  * /:uid - GET - get the user by uid
